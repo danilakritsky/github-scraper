@@ -13,7 +13,7 @@ class ScraperSpider(scrapy.Spider):
     def start_requests(self):
         """Start requests on the given url."""
         start_urls = [
-            'https://github.com/scrapy'
+            'https://github.com/ubuntu'
             ]
         for url in start_urls:
             yield scrapy.Request(url, callback=self.parse_account_page)
@@ -22,7 +22,6 @@ class ScraperSpider(scrapy.Spider):
     def parse_account_page(self, response) -> None:
         """Parse the GitHUb account page to extract the link to repos."""
         repos_url = response.css('a.UnderlineNav-item::attr(href)').re('.*repositories.*')[0]
-        # self.logger.info(repos_url)
         yield response.follow(repos_url, callback=self.parse_repos_page)      
 
 
@@ -50,7 +49,9 @@ class ScraperSpider(scrapy.Spider):
        
         # !!! only the main branch commits are available from the repo page
         main_branch_info = {}
-        main_branch_info['commit_count'] = response.css('a[href*="commits"]').css('strong::text').get()
+        commit_count = response.css('a[href*="commits"]').css('strong::text').get()     
+        if commit_count:  # handle empty repos
+            main_branch_info['commit_count'] = commit_count
         main_branch_commits_url = response.css('a[href*="commits"]::attr(href)').get()       
         
         release_count = response.css('a[href$="/releases"]').css('span::attr(title)').get()
@@ -64,15 +65,18 @@ class ScraperSpider(scrapy.Spider):
                 'watching': watching,
                 'main_branch_info': main_branch_info,
                 'release_count': release_count,
+                'latest_release': {}
         }
-
-        yield response.follow(
-            main_branch_commits_url,
-            callback=self.parse_commits_page,
-            meta={
-                'item': item,
-                'releases_url': releases_url
-            })  # pass as dict to avoid attaching technical details about the response to meta
+        if main_branch_commits_url:  # handle empty repos
+            yield response.follow(
+                main_branch_commits_url,
+                callback=self.parse_commits_page,
+                meta={  # pass as a dict to avoid attaching technical details about the response to meta
+                    'item': item,
+                    'releases_url': releases_url
+                })  
+        else:
+            yield item
 
 
     def parse_commits_page(self, response):
@@ -83,8 +87,6 @@ class ScraperSpider(scrapy.Spider):
         
         latest_commit_url = response.css('a[href*="/commit/"]::attr(href)').get()
 
-        self.logger.info('!!!!' * 10)
-        self.logger.info('INSIDE PARSE_COMMITS_PAGE')
         yield response.follow(
             latest_commit_url,
                 callback=self.parse_commit_message,
@@ -97,8 +99,6 @@ class ScraperSpider(scrapy.Spider):
         """Parse commit page for message."""
         item = response.meta['item']
         item['main_branch_info']['latest_commit_message'] = response.xpath('//div[@class="commit-title markdown-title"]//text()').getall()
-        self.logger.info('!!!!' * 10)
-        self.logger.info('INSIDE PARSE_COMMIT_MESSAGE')
         yield response.follow(
             response.meta['releases_url'],
             callback=self.parse_releases_page,
@@ -110,14 +110,7 @@ class ScraperSpider(scrapy.Spider):
     def parse_releases_page(self, response):
         """Parse releases page to extract data about the latest release."""
         item = response.meta['item']
-        item['latest_release'] = {}
         releases = response.css('a::attr(href)').re('.*releases/tag.*') 
-        self.logger.info('!!!!' * 10)
-        self.logger.info('INSIDE PARSE_RELEASES_PAGE')
-        if releases:        
-            self.logger.info(releases[0])
-        else:
-            self.logger.info('!!!!!!! NO RELEASES !!!!!!!')
         if releases:
             yield response.follow(
                 releases[0],
