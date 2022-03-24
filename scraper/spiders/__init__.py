@@ -22,7 +22,7 @@ class ScraperSpider(scrapy.Spider):
     def parse_account_page(self, response) -> None:
         """Parse the GitHUb account page to extract the link to repos."""
         repos_url = response.css('a.UnderlineNav-item::attr(href)').re('.*repositories.*')[0]
-        self.logger.info(repos_url)
+        # self.logger.info(repos_url)
         yield response.follow(repos_url, callback=self.parse_repos_page)      
 
 
@@ -34,6 +34,7 @@ class ScraperSpider(scrapy.Spider):
             yield response.follow(url, callback=self.parse_repo_info)
 
         next_page_url = response.css('a.next_page::attr(href)').get()
+        # set DOWNLOAD_DELAY = 0.5 in settings.py to avoid making too many requests (429 response code)
         self.logger.info(next_page_url)
         if next_page_url:
             yield response.follow(next_page_url, callback=self.parse_repos_page)
@@ -48,12 +49,14 @@ class ScraperSpider(scrapy.Spider):
         stars = response.css('span[id="repo-stars-counter-star"]::attr(title)').get()
         forks = response.css('span[id="repo-network-counter"]::attr(title)').get()     
         watching = response.css('a[href$="watchers"]').css('strong::text').get()
+       
         # !!! only the main branch commits are available from the repo page
-        main_branch_info = dict()
+        main_branch_info = {}
         main_branch_info['commit_count'] = response.css('a[href*="commits"]').css('strong::text').get()
-        main_branch_info['last_commit_author'] = response.css('a[class*="commit-author"]::text').get() # returns None from time to time
-        main_branch_info['last_commit_time'] = response.css('relative-time::attr(datetime)').get()
+        main_branch_commits_url = response.css('a[href*="commits"]::attr(href)').get()       
+        
         release_count = response.css('a[href$="releases"]').css('span::text').get()
+        releases_url = response.css('a[href$="releases"]::attr(href)').get()
         item = {
                 'repo_name': repo_name,
                 'about': about,
@@ -64,33 +67,48 @@ class ScraperSpider(scrapy.Spider):
                 'main_branch_info': main_branch_info,
                 'release_count': release_count
         }
-        self.logger.info(item)
 
-        releases_url = response.css('a::attr(href)').re('.*releases.*')[0]
-        self.logger.info(releases_url)
         yield response.follow(
-            releases_url,
-            callback=self.parse_releases_page,
-            meta=item)
+            main_branch_commits_url,
+            callback=self.parse_commits_page,
+            meta={
+                'item': item,
+                'releases_page': releases_url
+            })  # pass as dict to avoid attaching technical details about the response to meta
 
-    
-    def parse_releases_page(self, response):
-        """Parse releases page to extract data about the latest release."""
-        item = response.meta
-        releases = response.css('a::attr(href)').re('.*releases/tag.*')
+
+    def parse_commits_page(self, response):
+        """Parse the main branch commits page for info on the latest commit."""
+        item = response.meta['item']
+        item['main_branch_info']['last_commit_author'] = response.css('a[class*="commit-author"]::text').get() # returns None from time to time
+        item['main_branch_info']['last_commit_time'] = response.css('relative-time::attr(datetime)').get()
+        item['main_branch_info']['last_commit_message'] = response.css('a[data-test-selector="commit-tease-commit-message"]::text').get()
+        yield item
         
-        if releases:
-            self.logger.info(latest_release_url:=releases[0])
-            yield response.follow(latest_release_url, callback=self.parse_latest_release_info, meta=item)
+
+    # def parse_releases_page(self, response):
+    #     """Parse releases page to extract data about the latest release."""
+    #     item = response.meta['item']
+    #     item['latest_release'] = dict()
+    #     # self.logger.debug(item)
+    #     releases = response.css('a::attr(href)').re('.*releases/tag.*')
+    #     item['latest_release'] = {}   
+    #     if releases:
+    #         latest_release_url = releases[0]
+    #         yield response.follow(latest_release_url, callback=self.parse_latest_release_info, meta={'item': item})
+    #     # else:
+    #         # yield item
+        
 
     
-    def parse_latest_release_info(self, response):
-        """Parse info about the latest release."""
-        item = response.meta  
-        changelog = response.xpath('//div[@data-test-selector="body-content"]//text()').getall()
-        item['latest_release'] = dict()
-        item['latest_release']['changelog'] = changelog
-        self.logger.info(item)
+    # def parse_latest_release_info(self, response):
+    #     """Parse info about the latest release."""
+    #     item = response.meta['item']
+    #     tag = response.xpath('//div[@data-test-selector="body-content"]//text()').getall()
+
+    #     changelog = response.xpath('//div[@data-test-selector="body-content"]//text()').getall()
+    #     item['latest_release']['changelog'] = changelog
+    #     # yield item
 
 
 
