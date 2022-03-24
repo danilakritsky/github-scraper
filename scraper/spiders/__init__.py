@@ -53,6 +53,7 @@ class ScraperSpider(scrapy.Spider):
         main_branch_info['commit_count'] = response.css('a[href*="commits"]').css('strong::text').get()
         main_branch_info['last_commit_author'] = response.css('a[class*="commit-author"]::text').get() # returns None from time to time
         main_branch_info['last_commit_time'] = response.css('relative-time::attr(datetime)').get()
+        release_count = response.css('a[href$="releases"]').css('span::text').get()
         item = {
                 'repo_name': repo_name,
                 'about': about,
@@ -60,7 +61,8 @@ class ScraperSpider(scrapy.Spider):
                 'stars': stars,
                 'forks': forks,
                 'watching': watching,
-                'main_branch_info': main_branch_info
+                'main_branch_info': main_branch_info,
+                'release_count': release_count
         }
         self.logger.info(item)
 
@@ -75,21 +77,20 @@ class ScraperSpider(scrapy.Spider):
     def parse_releases_page(self, response):
         """Parse releases page to extract data about the latest release."""
         item = response.meta
-        self.logger.info(item)
         releases = response.css('a::attr(href)').re('.*releases/tag.*')
         
         if releases:
-            self.logger.info(latest_release_tage:=releases[0])
-            item['latest_release']['tag'] = latest_release
-            yield response.follow(latest_release, callback=self.parse_latest_release_info, meta=item)
+            self.logger.info(latest_release_url:=releases[0])
+            yield response.follow(latest_release_url, callback=self.parse_latest_release_info, meta=item)
 
     
     def parse_latest_release_info(self, response):
         """Parse info about the latest release."""
-        item = response.meta
+        item = response.meta  
         changelog = response.xpath('//div[@data-test-selector="body-content"]//text()').getall()
+        item['latest_release'] = dict()
         item['latest_release']['changelog'] = changelog
-        self.logger.info(changelog)
+        self.logger.info(item)
 
 
 
