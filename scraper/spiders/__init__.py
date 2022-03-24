@@ -41,27 +41,54 @@ class ScraperSpider(scrapy.Spider):
 
     def parse_repo_info(self, response):
         """Parse data for a specific repo page."""
-        about = response.css('[class="f4 my-3"]::text').getall()
-        ## remove newlines and spaces
-        self.logger.info(about)
+
+        repo_name = response.css('a[data-pjax="#repo-content-pjax-container"]::attr(href)').getall()[0] # split by / and get the last item
+        about = response.css('[class="f4 my-3"]::text').getall()  ## remove newlines and spaces
+        website_link = response.css('a[role="link"]::attr(href)').get()
+        stars = response.css('span[id="repo-stars-counter-star"]::attr(title)').get()
+        forks = response.css('span[id="repo-network-counter"]::attr(title)').get()     
+        watching = response.css('a[href$="watchers"]').css('strong::text').get()
+        # !!! only the main branch commits are available from the repo page
+        main_branch_info = dict()
+        main_branch_info['commit_count'] = response.css('a[href*="commits"]').css('strong::text').get()
+        main_branch_info['last_commit_author'] = response.css('a[class*="commit-author"]::text').get() # returns None from time to time
+        main_branch_info['last_commit_time'] = response.css('relative-time::attr(datetime)').get()
+        item = {
+                'repo_name': repo_name,
+                'about': about,
+                'website_link': website_link,
+                'stars': stars,
+                'forks': forks,
+                'watching': watching,
+                'main_branch_info': main_branch_info
+        }
+        self.logger.info(item)
 
         releases_url = response.css('a::attr(href)').re('.*releases.*')[0]
         self.logger.info(releases_url)
-        yield response.follow(releases_url, callback=self.parse_releases_page)
+        yield response.follow(
+            releases_url,
+            callback=self.parse_releases_page,
+            meta=item)
 
     
     def parse_releases_page(self, response):
         """Parse releases page to extract data about the latest release."""
+        item = response.meta
+        self.logger.info(item)
         releases = response.css('a::attr(href)').re('.*releases/tag.*')
         
         if releases:
-            self.logger.info(latest_release:=releases[0])
-            yield response.follow(latest_release, callback=self.parse_latest_release_info)
+            self.logger.info(latest_release_tage:=releases[0])
+            item['latest_release']['tag'] = latest_release
+            yield response.follow(latest_release, callback=self.parse_latest_release_info, meta=item)
 
     
     def parse_latest_release_info(self, response):
         """Parse info about the latest release."""
-        changelog = response.css('[data-test-selector="body-content"]')
+        item = response.meta
+        changelog = response.xpath('//div[@data-test-selector="body-content"]//text()').getall()
+        item['latest_release']['changelog'] = changelog
         self.logger.info(changelog)
 
 
