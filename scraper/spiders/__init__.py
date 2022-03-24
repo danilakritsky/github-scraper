@@ -8,7 +8,7 @@ import scrapy
 class ScraperSpider(scrapy.Spider):
     """Spider to crawl github accounts and collect data on repos."""
     name = 'scraper'
-
+    allowed_domains = 'github.com'
     
     def start_requests(self):
         """Start requests on the given url."""
@@ -16,31 +16,49 @@ class ScraperSpider(scrapy.Spider):
             'https://github.com/ubuntu'
             ]
         for url in start_urls:
-            yield scrapy.Request(url, callback=self.parse_account_page)
+            item = {'url': url}
+            yield scrapy.Request(
+                url,
+                callback=self.parse_account_page,
+                meta={'item': item})
 
 
     def parse_account_page(self, response) -> None:
         """Parse the GitHUb account page to extract the link to repos."""
+        item = response.meta['item']
         repos_url = response.css('a.UnderlineNav-item::attr(href)').re('.*repositories.*')[0]
-        yield response.follow(repos_url, callback=self.parse_repos_page)      
+        yield response.follow(
+            repos_url,
+            callback=self.parse_repos_page,
+            meta={'item': item}
+        )      
 
 
     def parse_repos_page(self, response):
         """Parse repos page to extract links to each repository."""
+        item = response.meta['item']
+        item['repos'] = {}
         repo_urls = response.css('[data-hovercard-type="repository"]::attr(href)').getall()
         for url in repo_urls:
             yield response.follow(url, callback=self.parse_repo_info)
 
         next_page_url = response.css('a.next_page::attr(href)').get()
         # set DOWNLOAD_DELAY = 0.5 in settings.py to avoid making too many requests (429 response code)
-        if next_page_url:
-            yield response.follow(next_page_url, callback=self.parse_repos_page)
+        
+        if next_page_url:  # handle empty accounts
+            yield response.follow(
+                next_page_url,
+                callback=self.parse_repos_page,
+                meta={'item': item})
+        else:
+            yield item
 
 
     def parse_repo_info(self, response):
         """Parse data for a specific repo page."""
+        item = response.meta['item']
 
-        repo_name = response.css('a[data-pjax="#repo-content-pjax-container"]::attr(href)').getall()[0] # split by / and get the last item
+        repo_name = response.css('a[data-pjax="#repo-content-pjax-container"]::attr(href)').getall()[0] # split by / and get the last item    
         about = response.css('[class="f4 my-3"]::text').getall()  ## remove newlines and spaces
         website_link = response.css('a[role="link"]::attr(href)').get()
         stars = response.css('span[id="repo-stars-counter-star"]::attr(title)').get()
@@ -56,7 +74,7 @@ class ScraperSpider(scrapy.Spider):
         
         release_count = response.css('a[href$="/releases"]').css('span::attr(title)').get()
         releases_url = response.css('a[href$="/releases"]::attr(href)').get()
-        item = {
+        item['repos'] = {
                 'repo_name': repo_name,
                 'about': about,
                 'website_link': website_link,
