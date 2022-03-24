@@ -79,7 +79,7 @@ class ScraperSpider(scrapy.Spider):
         """Parse the main branch commits page for info on the latest commit."""
         item = response.meta['item']
         item['main_branch_info']['latest_commit_author'] = response.css('a[class*="commit-author"]::text').get() # returns None from time to time
-        item['main_branch_info']['latest_commit_time'] = response.css('relative-time::attr(datetime)').get()
+        item['main_branch_info']['latest_commit_datetime'] = response.css('relative-time::attr(datetime)').get()
         
         latest_commit_url = response.css('a[href*="/commit/"]::attr(href)').get()
 
@@ -131,10 +131,15 @@ class ScraperSpider(scrapy.Spider):
     def parse_latest_release_info(self, response):
         """Parse info about the latest release."""
         item = response.meta['item']
+        
         tag = response.css('h1[class="d-inline mr-3"]::text').get()
         item['latest_release']['tag'] = tag
-        # changelog = response.xpath('//div[@data-test-selector="body-content"]//text()').getall()
-        # item['latest_release']['changelog'] = changelog
+        
+        changelog = response.xpath('//div[@data-test-selector="body-content"]//text()').getall()
+        item['latest_release']['changelog'] = changelog
+        
+        datetime = response.css('[datetime]::attr(datetime)').get()
+        item['latest_release']['datetime'] = datetime
         
         yield item
 
