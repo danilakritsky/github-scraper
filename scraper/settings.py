@@ -62,9 +62,8 @@ DOWNLOAD_DELAY = 0.5
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    'scraper.pipelines.ScraperPipeline': 300,
-# }
+ITEM_PIPELINES = {"scraper.pipelines.MongoDBPipeline": 100}
+
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -86,3 +85,8 @@ DOWNLOAD_DELAY = 0.5
 # HTTPCACHE_DIR = 'httpcache'
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+
+# MongoDB settings
+MONGO_URI = "mongodb://localhost:27017"
+MONGO_DATABASE_NAME = "ghubscraper"

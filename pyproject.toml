@@ -8,6 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.10"
 Scrapy = "^2.6.1"
+pymongo = "^4.0.2"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"

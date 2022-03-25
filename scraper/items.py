@@ -49,8 +49,10 @@ class MainBranchItem(scrapy.Item):
 class RepoInfoItem(scrapy.Item):
     """Item encapsulating repository data."""
 
-    account = Field(input_processor=Identity(), output_processor=TakeFirst())
-    repo_name = Field(
+    account = Field(
+        input_processor=lambda x: x[0].split("/")[-1], output_processor=TakeFirst()
+    )
+    repo = Field(
         input_processor=lambda x: x[0].split("/")[-1], output_processor=TakeFirst()
     )
     about = Field(
