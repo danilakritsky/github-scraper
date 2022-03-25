@@ -8,14 +8,24 @@ from scrapy import Field
 from itemloaders.processors import Identity, TakeFirst, MapCompose, Join
 
 
-def extract_repo_name(repo_url: str) -> str:
-    'Extract repo name from its url.'
-    return repo_url.split('/')[-1]
+class LatestReleaseItem(scrapy.Item):
+    """Item encapsulating the latest release data."""
+    tag = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+    datetime = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+    changelog = Field(
+        input_processor=Join(),
+        output_processor=lambda x: x[0].rstrip().lstrip()
+    )
 
-def remove_whitespace(text: str) -> str:
-    """Removes whitespace from a string."""
     
 class MainBranchItem(scrapy.Item):
+    """Item encapsulating main branch data."""
     commit_count = Field(
         input_processor=lambda x: x[0].replace(',', ''),  # remove the thousands separator
         output_processor=lambda x: int(x[0])
@@ -47,7 +57,7 @@ class RepoInfoItem(scrapy.Item):
         output_processor=lambda x: x[-1]
     )
     about = Field(
-        input_processor=TakeFirst(),
+        input_processor=Identity(),
         output_processor=lambda x: x[0].rstrip().lstrip()
     )
 
@@ -71,7 +81,10 @@ class RepoInfoItem(scrapy.Item):
         output_processor=TakeFirst()
     )
 
-    main_branch = Field()
+    main_branch = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
 
     release_count = Field(
         # return empty list to skip returning empty field
@@ -81,5 +94,5 @@ class RepoInfoItem(scrapy.Item):
 
     latest_release = Field(
         input_processor=Identity(),
-        #output_processor=TakeFirst()
+        output_processor=TakeFirst()
     )

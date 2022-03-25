@@ -5,7 +5,7 @@
 
 import scrapy
 from scrapy.loader import ItemLoader
-from scraper.items import RepoInfoItem, MainBranchItem
+from scraper.items import RepoInfoItem, MainBranchItem, LatestReleaseItem
 import copy
 
 
@@ -126,40 +126,40 @@ class ScraperSpider(scrapy.Spider):
         main_branch_loader.add_xpath('latest_commit_message', '//div[@class="commit-title markdown-title"]//text()')
         
         loader.add_value('main_branch', main_branch_loader.load_item())
+
+        yield response.follow(
+            response.meta["releases_url"],
+            callback=self.parse_releases_page,
+            meta={"loader": loader},
+        )
+
+    def parse_releases_page(self, response):
+        """Parse releases page to extract data about the latest release."""
+        loader = response.meta["loader"]
+        releases = response.css("a::attr(href)").re(".*releases/tag.*")
+        if releases:
+            yield response.follow(
+                releases[0],
+                callback=self.parse_latest_release_info,
+                meta={"loader": loader},
+            )
+        else:
+            yield loader.load_item()
+
+    def parse_latest_release_info(self, response):
+        """Parse info about the latest release."""
+        loader = response.meta["loader"]
+        latest_release_loader = ItemLoader(
+            item=LatestReleaseItem(),
+            selector=response)
+
+        latest_release_loader.add_css('tag', 'h1[class="d-inline mr-3"]::text')
+
+        # support parsing changelogs written in both rich and plain text
+        latest_release_loader.add_xpath('changelog', '//div[@data-test-selector="body-content"]//text()')
+        latest_release_loader.add_css('changelog', '[data-test-selector]::text')
+
+        latest_release_loader.add_css('datetime', '[datetime]::attr(datetime)')
+        loader.add_value('latest_release', latest_release_loader.load_item())
+
         yield loader.load_item()
-
-        # yield response.follow(
-        #     response.meta["releases_url"],
-        #     callback=self.parse_releases_page,
-        #     meta={"item": item},
-        # )
-
-    # def parse_releases_page(self, response):
-    #     """Parse releases page to extract data about the latest release."""
-    #     item = response.meta["item"]
-    #     releases = response.css("a::attr(href)").re(".*releases/tag.*")
-    #     if releases:
-    #         yield response.follow(
-    #             releases[0],
-    #             callback=self.parse_latest_release_info,
-    #             meta={"item": item},
-    #         )
-    #     else:
-    #         yield item
-
-    # def parse_latest_release_info(self, response):
-    #     """Parse info about the latest release."""
-    #     item = response.meta["item"]
-
-    #     tag = response.css('h1[class="d-inline mr-3"]::text').get()
-    #     item["latest_release"]["tag"] = tag
-
-    #     changelog = response.xpath(
-    #         '//div[@data-test-selector="body-content"]//text()'
-    #     ).getall()
-    #     item["latest_release"]["changelog"] = changelog
-
-    #     datetime = response.css("[datetime]::attr(datetime)").get()
-    #     item["latest_release"]["datetime"] = datetime
-
-    #     yield item
