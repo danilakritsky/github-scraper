@@ -15,7 +15,25 @@ def extract_repo_name(repo_url: str) -> str:
 def remove_whitespace(text: str) -> str:
     """Removes whitespace from a string."""
     
+class MainBranchItem(scrapy.Item):
+    commit_count = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+    latest_commit_author = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
 
+    latest_commit_datetime = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+
+    latest_commit_message = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
 
 class RepoInfoItem(scrapy.Item):
     """Item encapsulating repository data."""
@@ -47,7 +65,7 @@ class RepoInfoItem(scrapy.Item):
         input_processor=Identity(),
         output_processor=TakeFirst()
     )
-    main_branch_info = Field(
+    main_branch = Field(
         input_processor=Identity(),
         output_processor=TakeFirst()
     )
