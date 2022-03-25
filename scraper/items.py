@@ -5,6 +5,8 @@
 
 import scrapy
 from scrapy import Field
+from itemloaders.processors import Identity, TakeFirst
+
 
 def extract_repo_name(repo_url: str) -> str:
     'Extract repo name from its url.'
@@ -15,17 +17,45 @@ def remove_whitespace(text: str) -> str:
     
 
 
-class RepoInfo(scrapy.Item):
+class RepoInfoItem(scrapy.Item):
     """Item encapsulating repository data."""
-    account = Field()
-    repo_name = Field(
-        input_processor=extract_repo_name
+    account = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
     )
-    about = Field()
-    website_link = Field()
-    stars = Field()
-    forks = Field()
-    watching = Field()
-    main_branch_info = Field()
-    release_count = Field()
-    latest_release = Field()
+    repo_name = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+    about = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+    website_link = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+    stars = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+    forks = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+    watching = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+    main_branch_info = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+    release_count = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
+    latest_release = Field(
+        input_processor=Identity(),
+        output_processor=TakeFirst()
+    )
