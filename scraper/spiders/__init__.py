@@ -10,31 +10,36 @@ from scraper.items import RepoInfoItem, MainBranchItem, LatestReleaseItem
 import copy
 
 
-
 class ScraperSpider(scrapy.Spider):
     """Spider to crawl github accounts and collect data on repos."""
 
-    name = 'scraper'
-    allowed_domains = ['github.com']
+    name = "scraper"
+    allowed_domains = ["github.com"]
 
     def start_requests(self):
         """Start requests on the given url."""
-        start_urls = [
-            url for url in self.start_urls.split(',')
-        ]
-        for url in start_urls:
-            loader = ItemLoader(item=RepoInfoItem())
-            loader.add_value("account", url)
-            yield scrapy.Request(
-                url, callback=self.parse_account_page, meta={"loader": loader}
-            )
+        start_urls = []
+        for url in self.start_urls.split(","):
+            # ignore any domain other than github.com
+            if re.findall(f"^https?://{self.allowed_domains[0]}/[a-z-0-9]+", url):
+                start_urls.append(url)
+            else:
+                self.logger.warning(f"Ignoring {url} - not a valid GitHub subdomain!")
+
+        if start_urls:
+            for url in start_urls:
+                loader = ItemLoader(item=RepoInfoItem())
+                loader.add_value("account", url)
+                yield scrapy.Request(
+                    url, callback=self.parse_account_page, meta={"loader": loader}
+                )
+        else:
+            return
 
     def parse_account_page(self, response) -> None:
         """Parse the GitHUb account page to extract the link to repos."""
         loader = response.meta["loader"]
-        repos_url = response.css("[href]::attr(href)").re(
-            ".*repositories.*"
-        )[0]
+        repos_url = response.css("[href]::attr(href)").re(".*repositories.*")[0]
         yield response.follow(
             repos_url, callback=self.parse_repos_page, meta={"loader": loader}
         )
@@ -45,7 +50,6 @@ class ScraperSpider(scrapy.Spider):
         repo_urls = response.css(
             '[itemprop="name codeRepository"]::attr(href)'
         ).getall()
-        
 
         if not repo_urls:  # handle empty accounts
             yield loader.load_item()
