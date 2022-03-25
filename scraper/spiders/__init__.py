@@ -17,7 +17,7 @@ class ScraperSpider(scrapy.Spider):
 
     def start_requests(self):
         """Start requests on the given url."""
-        start_urls = ["https://github.com/scrapy"]
+        start_urls = ["https://github.com/ubuntu"]
         for url in start_urls:
             loader = ItemLoader(item=RepoInfoItem())
             loader.add_value("account", url)
@@ -63,46 +63,26 @@ class ScraperSpider(scrapy.Spider):
 
         # copy to avoid using the same item across repos
         loader = copy.deepcopy(response.meta["loader"])
-        repo_name = response.css(
-            'a[data-pjax="#repo-content-pjax-container"]::attr(href)'
-        ).getall()[
-            0
-        ]  # split by / and get the last item
-        loader.add_value('repo_name', repo_name)
 
-         ## remove newlines and spaces
-        about = response.css('[class="f4 my-3"]::text').getall() 
-        loader.add_value('about', about)
-
-        website_link = response.css('a[role="link"]::attr(href)').get()
-        loader.add_value('website_link', website_link)
-
-        stars = response.css('span[id="repo-stars-counter-star"]::attr(title)').get()
-        loader.add_value('stars', stars)
-
-        forks = response.css('span[id="repo-network-counter"]::attr(title)').get()
-        loader.add_value('forks', forks)
-
+        # assign current repsonse to the loader's selector attribute to use ccs and xpath
+        loader.selector = response
+        loader.add_css('repo_name', 'a[data-pjax="#repo-content-pjax-container"]::attr(href)')
+        loader.add_css('about', '[class="f4 my-3"]::text')
+        loader.add_css('website_link', 'a[role="link"]::attr(href)')
+        loader.add_css('stars', 'span[id="repo-stars-counter-star"]::attr(title)')
+        loader.add_css('forks', 'span[id="repo-network-counter"]::attr(title)')
         # can't parse the exact watcher count when logged out
-        watching = response.css('a[href$="watchers"]').css("strong::text").get()
-        loader.add_value('watching', watching)
-
-        release_count = (
-            response.css('a[href$="/releases"]').css("span::attr(title)").get()
-        )
-        loader.add_value('release_count', release_count)
-    
-        loader.add_value('latest_release', {})
+        loader.add_css('watching', 'a[href$="watchers"] > strong::text')
+        loader.add_css('release_count', 'a[href$="/releases"] span::attr(title)')
+        
         releases_url = response.css('a[href$="/releases"]::attr(href)').get()
 
-        
-        # !!! only the main branch commits are available from the repo page
-        main_branch_loader = ItemLoader(item=MainBranchItem())
-        main_branch_loader.add_value('commit_count', response.css('a[href*="commits"]').css("strong::text").get())     
+        # NOTE only the main branch commits are available from the repo page
+        main_branch_loader = ItemLoader(item=MainBranchItem(), selector=response)
         main_branch_commits_url = response.css('a[href*="commits"]::attr(href)').get()
-        
-
         if main_branch_commits_url:  # handle empty repos
+            # use the desendant selector (' '), instead of the child selector ('>')
+            main_branch_loader.add_css('commit_count', 'a[href*="commits"] strong::text')     
             yield response.follow(
                 main_branch_commits_url,
                 callback=self.parse_commits_page,
@@ -118,10 +98,11 @@ class ScraperSpider(scrapy.Spider):
     def parse_commits_page(self, response):
         """Parse the main branch commits page for info on the latest commit."""
         loader = response.meta["loader"]
-        main_branch_loader = response.meta["main_branch_loader"]
 
-        main_branch_loader.add_value('latest_commit_author', response.css('a[class*="commit-author"]::text').get())
-        main_branch_loader.add_value('latest_commit_datetime', response.css("relative-time::attr(datetime)").get())
+        main_branch_loader = response.meta["main_branch_loader"]
+        main_branch_loader.selector = response
+        main_branch_loader.add_css('latest_commit_author', 'a[class*="commit-author"]::text')
+        main_branch_loader.add_css('latest_commit_datetime', "relative-time::attr(datetime)")
         
         latest_commit_url = response.css('a[href*="/commit/"]::attr(href)').get()
 
@@ -138,11 +119,11 @@ class ScraperSpider(scrapy.Spider):
     def parse_commit_message(self, response):
         """Parse commit page for message."""
         loader = response.meta["loader"]
+        loader.selector = response
+        
         main_branch_loader = response.meta["main_branch_loader"]
-
-
-        latest_commit_message = response.xpath('//div[@class="commit-title markdown-title"]//text()').getall()
-        main_branch_loader.add_value('latest_commit_message', latest_commit_message)
+        main_branch_loader.selector = response
+        main_branch_loader.add_xpath('latest_commit_message', '//div[@class="commit-title markdown-title"]//text()')
         
         loader.add_value('main_branch', main_branch_loader.load_item())
         yield loader.load_item()
