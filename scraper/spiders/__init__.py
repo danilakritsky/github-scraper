@@ -17,7 +17,7 @@ class ScraperSpider(scrapy.Spider):
 
     def start_requests(self):
         """Start requests on the given url."""
-        start_urls = ["https://github.com/ubuntu"]
+        start_urls = ["https://github.com/scrapy"]
         for url in start_urls:
             loader = ItemLoader(item=RepoInfoItem())
             loader.add_value("account", url)
@@ -61,35 +61,39 @@ class ScraperSpider(scrapy.Spider):
     def parse_repo_info(self, response):
         """Parse data for a specific repo page."""
 
-        # copy to avoid using the same item across repos
+        # copy to avoid passing the same item across different repo parsers
         loader = copy.deepcopy(response.meta["loader"])
 
         # assign current repsonse to the loader's selector attribute to use ccs and xpath
         loader.selector = response
-        loader.add_css('repo_name', 'a[data-pjax="#repo-content-pjax-container"]::attr(href)')
-        loader.add_css('about', '[class="f4 my-3"]::text')
-        loader.add_css('website_link', 'a[role="link"]::attr(href)')
-        loader.add_css('stars', 'span[id="repo-stars-counter-star"]::attr(title)')
-        loader.add_css('forks', 'span[id="repo-network-counter"]::attr(title)')
-        # can't parse the exact watcher count when logged out
-        loader.add_css('watching', 'a[href$="watchers"] > strong::text')
-        loader.add_css('release_count', 'a[href$="/releases"] span::attr(title)')
-        
+        loader.add_css(
+            "repo_name", 'a[data-pjax="#repo-content-pjax-container"]::attr(href)'
+        )
+        loader.add_css("about", '[class="f4 my-3"]::text')
+        loader.add_css("website_link", 'a[role="link"]::attr(href)')
+        loader.add_css("stars", 'span[id="repo-stars-counter-star"]::attr(title)')
+        loader.add_css("forks", 'span[id="repo-network-counter"]::attr(title)')
+        # NOTE the exact watcher count is impossible to parse when logged out
+        loader.add_css("watching", 'a[href$="watchers"] > strong::text')
+        loader.add_css("release_count", 'a[href$="/releases"] span::attr(title)')
+
         releases_url = response.css('a[href$="/releases"]::attr(href)').get()
 
-        # NOTE only the main branch commits are available from the repo page
+        # NOTE only the main branch commits are available to parse from the repo page
         main_branch_loader = ItemLoader(item=MainBranchItem(), selector=response)
         main_branch_commits_url = response.css('a[href*="commits"]::attr(href)').get()
         if main_branch_commits_url:  # handle empty repos
             # use the desendant selector (' '), instead of the child selector ('>')
-            main_branch_loader.add_css('commit_count', 'a[href*="commits"] strong::text')     
+            main_branch_loader.add_css(
+                "commit_count", 'a[href*="commits"] strong::text'
+            )
             yield response.follow(
                 main_branch_commits_url,
                 callback=self.parse_commits_page,
                 meta={  # pass as a dict to avoid attaching technical details about the response to meta
                     "loader": loader,
                     "releases_url": releases_url,
-                    "main_branch_loader": main_branch_loader
+                    "main_branch_loader": main_branch_loader,
                 },
             )
         else:
@@ -101,9 +105,13 @@ class ScraperSpider(scrapy.Spider):
 
         main_branch_loader = response.meta["main_branch_loader"]
         main_branch_loader.selector = response
-        main_branch_loader.add_css('latest_commit_author', 'a[class*="commit-author"]::text')
-        main_branch_loader.add_css('latest_commit_datetime', "relative-time::attr(datetime)")
-        
+        main_branch_loader.add_css(
+            "latest_commit_author", 'a[class*="commit-author"]::text'
+        )
+        main_branch_loader.add_css(
+            "latest_commit_datetime", "relative-time::attr(datetime)"
+        )
+
         latest_commit_url = response.css('a[href*="/commit/"]::attr(href)').get()
 
         yield response.follow(
@@ -113,19 +121,22 @@ class ScraperSpider(scrapy.Spider):
                 "loader": loader,
                 "releases_url": response.meta["releases_url"],
                 "main_branch_loader": main_branch_loader,
-            }
+            },
         )
 
     def parse_commit_message(self, response):
         """Parse commit page for message."""
         loader = response.meta["loader"]
         loader.selector = response
-        
+
         main_branch_loader = response.meta["main_branch_loader"]
         main_branch_loader.selector = response
-        main_branch_loader.add_xpath('latest_commit_message', '//div[@class="commit-title markdown-title"]//text()')
-        
-        loader.add_value('main_branch', main_branch_loader.load_item())
+        main_branch_loader.add_xpath(
+            "latest_commit_message",
+            '//div[@class="commit-title markdown-title"]//text()',
+        )
+
+        loader.add_value("main_branch", main_branch_loader.load_item())
 
         yield response.follow(
             response.meta["releases_url"],
@@ -149,17 +160,17 @@ class ScraperSpider(scrapy.Spider):
     def parse_latest_release_info(self, response):
         """Parse info about the latest release."""
         loader = response.meta["loader"]
-        latest_release_loader = ItemLoader(
-            item=LatestReleaseItem(),
-            selector=response)
+        latest_release_loader = ItemLoader(item=LatestReleaseItem(), selector=response)
 
-        latest_release_loader.add_css('tag', 'h1[class="d-inline mr-3"]::text')
+        latest_release_loader.add_css("tag", 'h1[class="d-inline mr-3"]::text')
 
-        # support parsing changelogs written in both rich and plain text
-        latest_release_loader.add_xpath('changelog', '//div[@data-test-selector="body-content"]//text()')
-        latest_release_loader.add_css('changelog', '[data-test-selector]::text')
+        # support parsing changelogs written in both markdown and plain text
+        latest_release_loader.add_xpath(
+            "changelog", '//div[@data-test-selector="body-content"]//text()'
+        )
+        latest_release_loader.add_css("changelog", "[data-test-selector]::text")
 
-        latest_release_loader.add_css('datetime', '[datetime]::attr(datetime)')
-        loader.add_value('latest_release', latest_release_loader.load_item())
+        latest_release_loader.add_css("datetime", "[datetime]::attr(datetime)")
+        loader.add_value("latest_release", latest_release_loader.load_item())
 
         yield loader.load_item()
