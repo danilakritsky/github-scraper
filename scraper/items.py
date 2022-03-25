@@ -5,7 +5,7 @@
 
 import scrapy
 from scrapy import Field
-from itemloaders.processors import Identity, TakeFirst, MapCompose, Join
+from itemloaders.processors import Identity, TakeFirst, Join
 
 
 def strip_whitespace(text: str) -> str:

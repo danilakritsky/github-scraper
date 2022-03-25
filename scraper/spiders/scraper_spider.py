@@ -59,7 +59,8 @@ class ScraperSpider(scrapy.Spider):
             )
 
         next_page_url = response.css("a.next_page::attr(href)").get()
-        # set DOWNLOAD_DELAY = 0.5 in settings.py to avoid making too many requests (429 response code)
+        # set DOWNLOAD_DELAY = 0.5 in settings.py
+        # to avoid making too many requests (429 response code)
 
         if next_page_url:  # handle empty accounts
             yield response.follow(
@@ -98,14 +99,15 @@ class ScraperSpider(scrapy.Spider):
             yield response.follow(
                 main_branch_commits_url,
                 callback=self.parse_commits_page,
-                meta={  # pass as a dict to avoid attaching technical details about the response to meta
+                # pass as a dict to avoid attaching technical details about the response to meta
+                meta={
                     "loader": loader,
                     "releases_url": releases_url,
                     "main_branch_loader": main_branch_loader,
                 },
             )
         else:
-            yield (item := loader.load_item())
+            yield loader.load_item()
 
     def parse_commits_page(self, response):
         """Parse the main branch commits page for info on the latest commit."""

@@ -1,4 +1,4 @@
-# Scrapy settings for scraper project
+"""Scrapy settings for scraper project."""
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -44,9 +44,10 @@ DOWNLOAD_DELAY = 0.5
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-# SPIDER_MIDDLEWARES = {
-#    'scraper.middlewares.ScraperSpiderMiddleware': 543,
-# }
+SPIDER_MIDDLEWARES = {
+    # ignore invalid urls
+    "scrapy.spidermiddlewares.httperror.HttpErrorMiddleware": 100
+}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html

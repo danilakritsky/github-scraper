@@ -1,41 +1,14 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
+"""This module container pipelines for processing parsed items."""
 
-
-# useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
-from dataclasses import asdict
-import pymongo
-from scrapy.utils.project import get_project_settings
-from .items import RepoInfoItem
 import logging
 import pymongo
 
+from scrapy.utils.project import get_project_settings
+
+from .items import RepoInfoItem
+
+
 settings = get_project_settings()
-
-# class MongoDBPipeline:
-#     """Pipeline to save data to MongoDB."""
-#     def __init__(self):
-#         conn = pymongo.MongoClient(
-#             settings.get('MONGO_HOST'),
-#             settings.get('MONGO_PORT')
-#         )
-#         db = conn[settings.get('MONGO_DB_NAME')]
-#         self.collection = db[settings['MONGO_COLLECTION_NAME']]
-
-#     def process_item(self, item, spider):
-#         if isinstance(item, RepoInfoItem):
-#             self.collection.update(item, upsert=True)
-#         else:
-#             pass
-#             # comments = []
-#             # for comment in item.get("comments"):
-#             #     comments.append(asdict(comment))
-#             # self.collection.update({"_id": item.get("article_id")}, {"$set": {"comments": comments} }, upsert=True)
-
-#         return item
 
 
 class MongoDBPipeline:
@@ -45,9 +18,8 @@ class MongoDBPipeline:
 
     def __init__(self):
         """Initialize the pipeline."""
-        self.settings = get_project_settings()
-        self.mongo_uri = self.settings.get("MONGO_URI")
-        self.mongo_database_name = self.settings.get("MONGO_DATABASE_NAME")
+        self.mongo_uri = settings.get("MONGO_URI")
+        self.mongo_database_name = settings.get("MONGO_DATABASE_NAME")
         self.mongo_client: pymongo.MongoClient
         self.mongo_db: pymongo.database.Database
 
