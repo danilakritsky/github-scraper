@@ -3,21 +3,25 @@
 # Please refer to the documentation for information on how to create and manage
 # your spiders.
 
+import re
 import scrapy
 from scrapy.loader import ItemLoader
 from scraper.items import RepoInfoItem, MainBranchItem, LatestReleaseItem
 import copy
 
 
+
 class ScraperSpider(scrapy.Spider):
     """Spider to crawl github accounts and collect data on repos."""
 
-    name = "scraper"
-    # allowed_domains = 'github.com'
+    name = 'scraper'
+    allowed_domains = ['github.com']
 
     def start_requests(self):
         """Start requests on the given url."""
-        start_urls = ["https://github.com/scrapy"]
+        start_urls = [
+            url for url in self.start_urls.split(',')
+        ]
         for url in start_urls:
             loader = ItemLoader(item=RepoInfoItem())
             loader.add_value("account", url)
@@ -28,7 +32,7 @@ class ScraperSpider(scrapy.Spider):
     def parse_account_page(self, response) -> None:
         """Parse the GitHUb account page to extract the link to repos."""
         loader = response.meta["loader"]
-        repos_url = response.css("a.UnderlineNav-item::attr(href)").re(
+        repos_url = response.css("[href]::attr(href)").re(
             ".*repositories.*"
         )[0]
         yield response.follow(
@@ -39,8 +43,9 @@ class ScraperSpider(scrapy.Spider):
         """Parse repos page to extract links to each repository."""
         loader = response.meta["loader"]
         repo_urls = response.css(
-            '[data-hovercard-type="repository"]::attr(href)'
+            '[itemprop="name codeRepository"]::attr(href)'
         ).getall()
+        
 
         if not repo_urls:  # handle empty accounts
             yield loader.load_item()
