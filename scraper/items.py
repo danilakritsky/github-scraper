@@ -3,9 +3,15 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/items.html
 
+from datetime import datetime
 import scrapy
 from scrapy import Field
 from itemloaders.processors import Identity, TakeFirst, Join
+
+
+def parse_utc_string(datestr: str) -> datetime:
+    """Parse string containing UTC timestamp an return a corresponding datetime object."""
+    return datetime.strptime(datestr, "%Y-%m-%dT%H:%M:%SZ")
 
 
 def strip_whitespace(text: str) -> str:
@@ -21,9 +27,11 @@ def remove_thousand_separator(int_as_str: str) -> str:
 class LatestReleaseItem(scrapy.Item):
     """Item encapsulating the latest release data."""
 
-    tag = Field(input_processor=Identity(), output_processor=TakeFirst())
-    datetime = Field(input_processor=Identity(), output_processor=TakeFirst())
-    changelog = Field(
+    latest_release_tag = Field(input_processor=Identity(), output_processor=TakeFirst())
+    latest_release_datetime = Field(
+        input_processor=lambda x: parse_utc_string(x[0]), output_processor=TakeFirst()
+    )
+    latest_release_changelog = Field(
         input_processor=Join(), output_processor=lambda x: strip_whitespace(x[0])
     )
 
@@ -31,17 +39,17 @@ class LatestReleaseItem(scrapy.Item):
 class MainBranchItem(scrapy.Item):
     """Item encapsulating main branch data."""
 
-    commit_count = Field(
+    main_branch_commit_count = Field(
         input_processor=lambda x: int(remove_thousand_separator(x[0])),
         output_processor=TakeFirst(),
     )
-    latest_commit_author = Field(
+    main_branch_latest_commit_author = Field(
         input_processor=Identity(), output_processor=TakeFirst()
     )
-    latest_commit_datetime = Field(
-        input_processor=Identity(), output_processor=TakeFirst()
+    main_branch_latest_commit_datetime = Field(
+        input_processor=lambda x: parse_utc_string(x[0]), output_processor=TakeFirst()
     )
-    latest_commit_message = Field(
+    main_branch_latest_commit_message = Field(
         input_processor=Join(), output_processor=lambda x: strip_whitespace(x[0])
     )
 

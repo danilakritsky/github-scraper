@@ -94,7 +94,7 @@ class ScraperSpider(scrapy.Spider):
         if main_branch_commits_url:  # handle empty repos
             # use the desendant selector (' '), instead of the child selector ('>')
             main_branch_loader.add_css(
-                "commit_count", 'a[href*="commits"] strong::text'
+                "main_branch_commit_count", 'a[href*="commits"] strong::text'
             )
             yield response.follow(
                 main_branch_commits_url,
@@ -116,10 +116,10 @@ class ScraperSpider(scrapy.Spider):
         main_branch_loader = response.meta["main_branch_loader"]
         main_branch_loader.selector = response
         main_branch_loader.add_css(
-            "latest_commit_author", 'a[class*="commit-author"]::text'
+            "main_branch_latest_commit_author", 'a[class*="commit-author"]::text'
         )
         main_branch_loader.add_css(
-            "latest_commit_datetime", "relative-time::attr(datetime)"
+            "main_branch_latest_commit_datetime", "relative-time::attr(datetime)"
         )
 
         latest_commit_url = response.css('a[href*="/commit/"]::attr(href)').get()
@@ -142,7 +142,7 @@ class ScraperSpider(scrapy.Spider):
         main_branch_loader = response.meta["main_branch_loader"]
         main_branch_loader.selector = response
         main_branch_loader.add_xpath(
-            "latest_commit_message",
+            "main_branch_latest_commit_message",
             '//div[@class="commit-title markdown-title"]//text()',
         )
 
@@ -172,15 +172,22 @@ class ScraperSpider(scrapy.Spider):
         loader = response.meta["loader"]
         latest_release_loader = ItemLoader(item=LatestReleaseItem(), selector=response)
 
-        latest_release_loader.add_css("tag", 'h1[class="d-inline mr-3"]::text')
+        latest_release_loader.add_css(
+            "latest_release_tag", 'h1[class="d-inline mr-3"]::text'
+        )
 
         # support parsing changelogs written in both markdown and plain text
         latest_release_loader.add_xpath(
-            "changelog", '//div[@data-test-selector="body-content"]//text()'
+            "latest_release_changelog",
+            '//div[@data-test-selector="body-content"]//text()',
         )
-        latest_release_loader.add_css("changelog", "[data-test-selector]::text")
+        latest_release_loader.add_css(
+            "latest_release_changelog", "[data-test-selector]::text"
+        )
 
-        latest_release_loader.add_css("datetime", "[datetime]::attr(datetime)")
+        latest_release_loader.add_css(
+            "latest_release_datetime", "[datetime]::attr(datetime)"
+        )
         loader.add_value("latest_release", latest_release_loader.load_item())
 
         yield loader.load_item()
