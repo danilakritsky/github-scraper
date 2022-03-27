@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  ghubscraper:
+    build: .
+    container_name: ghubscraper
+    environment:
+      - MONGO_URI=mongodb://ghubscraper:ghubscraper@mongo:27017/
+    volumes:
+      - ./:/home/nonroot/ghubscraper/
+    ports:
+      - 8000:8000
+    tty: true  # persist (should use 'sh' as entrypoint)
+    # command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+  db:
+    image: mongo
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ghubscraper
+      MONGO_INITDB_ROOT_PASSWORD: ghubscraper
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongodata/:/data/db
+
+# scrapy crawl scraper -a start_urls=https://github.com/danilakritsky

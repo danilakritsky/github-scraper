@@ -7,6 +7,7 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import os
 BOT_NAME = "scraper"
 
 SPIDER_MODULES = ["scraper.spiders"]
@@ -89,5 +90,5 @@ ITEM_PIPELINES = {"scraper.pipelines.MongoDBPipeline": 100}
 
 
 # MongoDB settings
-MONGO_URI = "mongodb://localhost:27017"
+MONGO_URI = os.getenv('MONGO_URI')
 MONGO_DATABASE_NAME = "ghubscraper"
