@@ -11,11 +11,15 @@ Scraped items are stored in a MongoDB database.
 - `./scraper/settings.py` - stores project settings.
 
 ### Deployment
-
+Clone the projects' repo and `cd` into it:
+> `git clone https://github.com/danilakritsky/ghubscraper`
+>
+> `cd ghubscraper`
+>
 **`docker` must be installed on your system.**  
 App is deployed via `docker` CLI using the `Dockerfile` and `docker-compose.yml` files provided in the project's directory.  
 These files define two containers - one for the `ghubscraper` project itself and another one for the MongoDB database that will be used to store the scraped data.  
-To start both containers in detached mode run the following command:
+To build and start both containers in detached mode run the following command:
 > ```docker-compose up -d```
 
 ### Example usage
