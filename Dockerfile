@@ -54,9 +54,10 @@ COPY pyproject.toml $APP_DIR
 RUN poetry install
 COPY ./scraper $APP_DIR/scraper
 COPY scrapy.cfg $APP_DIR
+COPY scrapydweb_settings_v10.py $APP_DIR
 
 # ===== ACCESS CONTAINER AS NON-ROOT ===
 # make the nonroot user the owner of the app files
-RUN chown -R nonroot:nonroot $APP_DIR
-USER nonroot
+# RUN chown -R nonroot:nonroot $APP_DIR
+# USER nonroot
 ENTRYPOINT [ "sh" ]

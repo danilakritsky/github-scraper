@@ -2,16 +2,27 @@ version: '3.8'
 
 services:
   ghubscraper:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: ghubscraper
     environment:
       - MONGO_URI=mongodb://ghubscraper:ghubscraper@mongo:27017/
     volumes:
       - ./:/home/nonroot/ghubscraper/
     ports:
-      - 8000:8000
+      - 5000:5000
     tty: true  # persist (should use 'sh' as entrypoint)
-    # command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    command: sh -c "scrapyd-deploy; scrapydweb"
+  scrapyd:
+    build:
+      context: .
+      dockerfile: Dockerfile.scrapyd
+    container_name: scrapyd
+    ports:
+      - 5990:5990
+    tty: true
+    # command: 
   db:
     image: mongo
     container_name: mongo

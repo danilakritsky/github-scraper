@@ -1,0 +1,31 @@
+FROM python:3.10-alpine
+
+# ===== INSTALL DEPENDENCIES =====
+RUN \
+    # update the list of packages to get curl
+    apk update \
+    # add poetry, scrapy dependencies
+    && apk add --no-cache \
+        curl \
+        gcc \
+        libc-dev \
+        musl-dev \
+        libffi-dev \
+        zlib-dev \
+        make \
+        patch \
+        readline-dev \
+        openssl-dev \
+        bzip2-dev
+        # libxml2-dev \
+        # libxslt-dev \
+        # rust \
+        # cargo \
+        # g++ 
+
+RUN pip install scrapyd
+COPY scrapyd.conf /home
+ENTRYPOINT [ "sh" ]
+
+
+
