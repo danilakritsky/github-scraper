@@ -9,7 +9,8 @@ import json
 
 from .items import RepoInfoItem
 from itemadapter import ItemAdapter
-
+from scrapy.http import FormRequest
+import requests
 
 settings = get_project_settings()
 
@@ -56,13 +57,13 @@ class MongoDBPipeline:
 class APIPipeline:
     """Pipeline that save scraped repo data to a MongoDB database."""
 
-
     def process_item(self, item, _):
         """Process each item and save it to the database."""
-        if isinstance(item, RepoInfoItem):
-            return scrapy.Request(
-                url='http://127.0.0.1:8000/create/',
-                method='POST', 
-                body=json.dumps(ItemAdapter(item).asdict(), default=str), 
-                headers={'Content-Type':'application/json'}
-            )
+        logging.info('!!!!!!!!!!! ITEM IS!!!!!!!!!!!!!!!!!!')
+        logging.info(item)
+        requests.post(
+            'http://127.0.0.1:8000/create/',
+            data=json.dumps(ItemAdapter(item).asdict(), default=str)
+        )
+        return item
+
