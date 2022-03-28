@@ -64,7 +64,10 @@ SPIDER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {"scraper.pipelines.MongoDBPipeline": 100}
+ITEM_PIPELINES = {
+    "scraper.pipelines.MongoDBPipeline": 100,
+    "scraper.pipelines.APIPipeline": 200
+}
 
 
 # Enable and configure the AutoThrottle extension (disabled by default)

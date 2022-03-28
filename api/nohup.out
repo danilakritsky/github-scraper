@@ -1,0 +1,58 @@
+Watching for file changes with StatReloader
+[28/Mar/2022 12:00:00] "GET / HTTP/1.0" 200 6788
+[28/Mar/2022 12:00:00] "GET /static/rest_framework/js/prettify-min.js HTTP/1.0" 304 0
+[28/Mar/2022 12:00:00] "GET /static/rest_framework/js/ajax-form.js HTTP/1.0" 304 0
+[28/Mar/2022 12:00:00] "GET /static/rest_framework/css/prettify.css HTTP/1.0" 304 0
+[28/Mar/2022 12:00:04] code 400, message Bad request version ('\x00\x04\x03\x00\x01\x02\x00')
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+[28/Mar/2022 12:00:04] code 400, message Bad request version ('\x00\x04\x03\x00\x01\x02\x00')
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+[28/Mar/2022 12:00:04] code 400, message Bad request version ("Â\x803\x00\x00|À,À0\x00£\x00\x9fÌ©Ì¨ÌªÀ¯À\xadÀ£À\x9fÀ]ÀaÀWÀSÀ+À/\x00¢\x00\x9eÀ®À¬À¢À\x9eÀ\\À`ÀVÀRÀ$À(\x00k\x00jÀ#À'\x00g\x00@À")
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+[28/Mar/2022 12:00:04] code 400, message Bad HTTP/0.9 request type ("\x16\x03\x01\x01=\x01\x00\x019\x03\x03²ÚLK\x8b\x88õzfn'\x83r5-ogÍãø^?\x06xaN&X®.+")
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+[28/Mar/2022 12:00:04] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00¯\x01\x00\x00«\x03\x02½ðïñL¼{)Ru\x0e}4j´î¤\x91Ëµ_\x17äÞaæû¸\x93')
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+[28/Mar/2022 12:00:04] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x01\x13\x01\x00\x01\x0f\x03\x02£Û\x14y7\x1bAQ\x0fV<rFåA£ê\x13')
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+[28/Mar/2022 12:00:04] code 400, message Bad HTTP/0.9 request type ('\x16\x03\x01\x00¯\x01\x00\x00«\x03\x01\x8a;D1')
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+[28/Mar/2022 12:00:04] code 400, message Bad request version ('ôÃ\x15\x80\x9e)Ï½V\x9eÏý\x03<\x00\x00¢À\x14À')
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+[28/Mar/2022 12:00:04] code 400, message Bad request syntax ('\x16\x03\x00\x00j\x01\x00\x00f\x03\x00\x83&\x9dvcªP~V»A\x9fE¥8tc¸ì8Í¯5\x0eØÝÌ!î9ÍÞ\x00\x00>À\x14À')
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+[28/Mar/2022 12:00:04] code 400, message Bad request syntax ('\x16\x03\x00\x00Î\x01\x00\x00Ê\x03\x00+(jÅäüÁh§Î#Ð@Ü\x90TpÚæ\x08è+X\x9a\x08l\x1a-\x97o¢A\x00\x00¢À\x14À')
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+[28/Mar/2022 12:00:04] code 400, message Bad request syntax ('\x16\x03\x01\x01\x1b\x01\x00\x01\x17\x03\x03·\x8fQÅ@Æ\x9eéLÀôI')
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+[28/Mar/2022 12:00:04] code 400, message Bad request version ('\x00\x00ôÀ0À,À(À$À\x14À')
+[28/Mar/2022 12:00:04] You're accessing the development server over HTTPS, but it only supports HTTP.
+
+Method Not Allowed: /create/
+[28/Mar/2022 12:00:30] "GET /create/ HTTP/1.1" 405 11566
+[28/Mar/2022 12:00:30] "GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 200 121457
+[28/Mar/2022 12:00:30] "GET /static/rest_framework/js/jquery-3.5.1.min.js HTTP/1.1" 200 89476
+[28/Mar/2022 12:00:30] "GET /static/rest_framework/js/default.js HTTP/1.1" 200 1268
+[28/Mar/2022 12:00:30] "GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 200 3385
+[28/Mar/2022 12:00:30] "GET /static/rest_framework/css/default.css HTTP/1.1" 200 1152
+[28/Mar/2022 12:00:30] "GET /static/rest_framework/js/csrf.js HTTP/1.1" 200 1719
+[28/Mar/2022 12:00:30] "GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 200 39680
+[28/Mar/2022 12:00:30] "GET /static/rest_framework/img/grid.png HTTP/1.1" 304 0
+[28/Mar/2022 12:00:35] "GET / HTTP/1.1" 200 6788
+[28/Mar/2022 12:00:42] "GET / HTTP/1.1" 200 6788
+[28/Mar/2022 12:01:13] "GET / HTTP/1.1" 200 6788
+[28/Mar/2022 12:01:16] "GET / HTTP/1.1" 200 6788
+[28/Mar/2022 12:01:18] "GET / HTTP/1.1" 200 6788
+[28/Mar/2022 12:11:12] "GET / HTTP/1.1" 200 6788
+[28/Mar/2022 12:12:56] "GET / HTTP/1.1" 200 6788

@@ -12,11 +12,10 @@ from scraper.items import RepoInfoItem, MainBranchItem, LatestReleaseItem
 class ScraperSpider(scrapy.Spider):
     """Spider to crawl github accounts and collect data on repos."""
 
-    name = "scraper"
+    name = "scraper_api"
     allowed_domains = ["github.com"]
-
     custom_settings = {
-        'ITEM_PIPELINES': {"scraper.pipelines.MongoDBPipeline": 100}
+        'ITEM_PIPELINES': {"scraper.pipelines.APIPipeline": 200}
     }
 
     def start_requests(self):
