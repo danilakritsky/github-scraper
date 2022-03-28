@@ -6,7 +6,7 @@ import copy
 import scrapy
 from scrapy.loader import ItemLoader
 
-from scraper.items import RepoInfoItem, MainBranchItem, LatestReleaseItem
+from scraper.items import RepoInfoItem
 
 
 class ScraperSpider(scrapy.Spider):
@@ -93,11 +93,11 @@ class ScraperSpider(scrapy.Spider):
         releases_url = response.css('a[href$="/releases"]::attr(href)').get()
 
         # NOTE only the main branch commits are available to parse from the repo page
-        main_branch_loader = ItemLoader(item=MainBranchItem(), selector=response)
+       #  main_branch_loader = ItemLoader(item=MainBranchItem(), selector=response)
         main_branch_commits_url = response.css('a[href*="commits"]::attr(href)').get()
         if main_branch_commits_url:  # handle empty repos
             # use the desendant selector (' '), instead of the child selector ('>')
-            main_branch_loader.add_css(
+            loader.add_css(
                 "main_branch_commit_count", 'a[href*="commits"] strong::text'
             )
             yield response.follow(
@@ -107,7 +107,6 @@ class ScraperSpider(scrapy.Spider):
                 meta={
                     "loader": loader,
                     "releases_url": releases_url,
-                    "main_branch_loader": main_branch_loader,
                 },
             )
         else:
@@ -117,12 +116,12 @@ class ScraperSpider(scrapy.Spider):
         """Parse the main branch commits page for info on the latest commit."""
         loader = response.meta["loader"]
 
-        main_branch_loader = response.meta["main_branch_loader"]
-        main_branch_loader.selector = response
-        main_branch_loader.add_css(
+        # main_branch_loader = response.meta["main_branch_loader"]
+        loader.selector = response
+        loader.add_css(
             "main_branch_latest_commit_author", 'a[class*="commit-author"]::text'
         )
-        main_branch_loader.add_css(
+        loader.add_css(
             "main_branch_latest_commit_datetime", "relative-time::attr(datetime)"
         )
 
@@ -134,7 +133,6 @@ class ScraperSpider(scrapy.Spider):
             meta={
                 "loader": loader,
                 "releases_url": response.meta["releases_url"],
-                "main_branch_loader": main_branch_loader,
             },
         )
 
@@ -143,14 +141,10 @@ class ScraperSpider(scrapy.Spider):
         loader = response.meta["loader"]
         loader.selector = response
 
-        main_branch_loader = response.meta["main_branch_loader"]
-        main_branch_loader.selector = response
-        main_branch_loader.add_xpath(
+        loader.add_xpath(
             "main_branch_latest_commit_message",
             '//div[@class="commit-title markdown-title"]//text()',
         )
-
-        loader.add_value("main_branch", main_branch_loader.load_item())
 
         yield response.follow(
             response.meta["releases_url"],
@@ -174,24 +168,22 @@ class ScraperSpider(scrapy.Spider):
     def parse_latest_release_info(self, response):
         """Parse info about the latest release."""
         loader = response.meta["loader"]
-        latest_release_loader = ItemLoader(item=LatestReleaseItem(), selector=response)
-
-        latest_release_loader.add_css(
+        
+        loader.add_css(
             "latest_release_tag", 'h1[class="d-inline mr-3"]::text'
         )
 
         # support parsing changelogs written in both markdown and plain text
-        latest_release_loader.add_xpath(
+        loader.add_xpath(
             "latest_release_changelog",
             '//div[@data-test-selector="body-content"]//text()',
         )
-        latest_release_loader.add_css(
+        loader.add_css(
             "latest_release_changelog", "[data-test-selector]::text"
         )
 
-        latest_release_loader.add_css(
+        loader.add_css(
             "latest_release_datetime", "[datetime]::attr(datetime)"
         )
-        loader.add_value("latest_release", latest_release_loader.load_item())
 
         yield loader.load_item()

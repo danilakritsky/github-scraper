@@ -59,11 +59,13 @@ class APIPipeline:
 
     def process_item(self, item, _):
         """Process each item and save it to the database."""
-        logging.info('!!!!!!!!!!! ITEM IS!!!!!!!!!!!!!!!!!!')
-        logging.info(item)
         requests.post(
             'http://127.0.0.1:8000/create/',
-            data=json.dumps(ItemAdapter(item).asdict(), default=str)
+            data=json.dumps(ItemAdapter(item).asdict()),
+            headers={
+                'Content-type':'application/json', 
+                'Accept':'application/json'
+            }
         )
         return item
 
