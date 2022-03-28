@@ -8,8 +8,7 @@ services:
       - MONGO_URI=mongodb://ghubscraper:ghubscraper@mongo:27017/
     volumes:
       - ./:/home/nonroot/ghubscraper/
-    ports:
-      - 8000:8000
+    # ports:
     tty: true  # persist (should use 'sh' as entrypoint)
     # command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
   db:
@@ -22,5 +21,35 @@ services:
       - 27017:27017
     volumes:
       - ./mongodata/:/data/db
+  api:
+    image: python:3.10-alpine
+    container_name: api
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    ports:
+      - 8000:8000
+    volumes:
+      - ./api:/home/api/
+    command: >
+      sh -c "pip install django==4.0.3 djangorestframework==3.13.1 psycopg2-binary==2.9.3 &&
+        cd home/api &&
+        python manage.py makemigrations &&
+        python manage.py migrate &&
+        python manage.py runserver 0.0.0.0:8000"
+    tty: true
+    depends_on:
+      - postgres
+    links:
+      - postgres:postgres
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=ghubscraper
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    restart: always
+    ports:
+      - 5432:5432
 
 # scrapy crawl scraper -a start_urls=https://github.com/danilakritsky

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-uoa)5$fdu+)!2)6s2gv944+!8unlpx!cc8(@pc08_ky0^$-6r4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -81,7 +81,7 @@ DATABASES = {
         'NAME': 'ghubscraper',
         'USER': 'postgres',
         'PASSWORD': '123',
-        'HOST': '127.0.0.1',
+        'HOST': 'postgres',
         'PORT': '5432',
     }
 }

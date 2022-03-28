@@ -20,11 +20,6 @@ class RepoCreate(generics.CreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# class RepoCreate(generics.CreateView):
-#     # API endpoint that allows creation of a new customer
-#     queryset = Repo.objects.all()
-#     serializer_class = RepoSerializer    
-
 
 class RepoList(generics.ListAPIView):
     # API endpoint that allows customer to be viewed.
