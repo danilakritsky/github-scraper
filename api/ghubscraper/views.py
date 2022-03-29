@@ -14,7 +14,7 @@ class RepoCreate(generics.CreateAPIView):
 
     def get(self, request):
         return Response(
-            {"info": "Make POST against this endpoint (/create/) to add new repo data."},
+            {"info": "Make a POST request against this endpoint (/create/) to add new repo data."},
             status=status.HTTP_200_OK
         )
 

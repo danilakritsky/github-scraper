@@ -153,4 +153,5 @@ cython_debug/
 
 # persistant database data
 mongodata/
+postgresdata/
 .ash_history

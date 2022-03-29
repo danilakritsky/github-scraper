@@ -1,18 +1,24 @@
 version: '3.8'
 
 services:
-  ghubscraper:
-    build: .
-    container_name: ghubscraper
+
+  # =======================
+  
+  scraper:
+    build: scraper/.
+    container_name: scraper
     environment:
       - MONGO_URI=mongodb://ghubscraper:ghubscraper@mongo:27017/
     volumes:
-      - ./:/home/nonroot/ghubscraper/
-    # ports:
+      - ./scraper/:/home/scraper/
+    command: scrapyd-deploy
     depends_on:
       - mongo
+      - scrapyd
     tty: true  # persist (should use 'sh' as entrypoint)
-    # command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+  
+  # =======================
+  
   mongo:
     image: mongo
     container_name: mongo
@@ -23,23 +29,28 @@ services:
       - 27017:27017
     volumes:
       - ./mongodata/:/data/db
+  
+  # =======================
+  
   api:
     build: api/.
     container_name: api
     ports:
       - 8000:8000
     volumes:
-      - ./api:/home/api/
-    command: python manage.py runserver 0.0.0.0:8000
-      # sh -c "
-      #   python manage.py makemigrations &&
-      #   python manage.py migrate &&
-      #   python manage.py runserver 0.0.0.0:8000"
+       - ./api:/home/api
+    # migrate here since migration depends on postgres
+    command: >
+      sh -c "python manage.py migrate &&
+            python manage.py runserver 0.0.0.0:8000"
     tty: true
     depends_on:
       - postgres
     links:
       - postgres:postgres
+  
+  # =======================
+  
   postgres:
     image: postgres
     container_name: postgres
@@ -49,6 +60,11 @@ services:
     restart: always
     ports:
       - 5432:5432
+    volumes:
+      - ./postgresdata:/var/lib/postgresql/data
+  
+  # =======================
+  
   scrapyd:
     build: scrapyd/.
     container_name: scrapyd
@@ -58,6 +74,5 @@ services:
     ports:
       - 6800:6800
     command: scrapyd
-
 
 # scrapy crawl scraper -a start_urls=https://github.com/danilakritsky
