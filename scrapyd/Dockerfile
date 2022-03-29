@@ -10,7 +10,7 @@ RUN \
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN mkdir -p /home/scrapyd
+RUN mkdir -p /home/scrapyd/
 ENV HOME=/home/scrapyd/
 WORKDIR $HOME
 

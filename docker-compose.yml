@@ -24,21 +24,17 @@ services:
     volumes:
       - ./mongodata/:/data/db
   api:
-    image: python:3.10-alpine
+    build: api/.
     container_name: api
-    environment:
-      - PYTHONDONTWRITEBYTECODE=1
-      - PYTHONUNBUFFERED=1
     ports:
       - 8000:8000
     volumes:
       - ./api:/home/api/
-    command: >
-      sh -c "pip install django==4.0.3 djangorestframework==3.13.1 psycopg2-binary==2.9.3 &&
-        cd home/api &&
-        python manage.py makemigrations &&
-        python manage.py migrate &&
-        python manage.py runserver 0.0.0.0:8000"
+    command: python manage.py runserver 0.0.0.0:8000
+      # sh -c "
+      #   python manage.py makemigrations &&
+      #   python manage.py migrate &&
+      #   python manage.py runserver 0.0.0.0:8000"
     tty: true
     depends_on:
       - postgres
