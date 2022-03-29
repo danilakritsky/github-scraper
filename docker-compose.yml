@@ -9,9 +9,11 @@ services:
     volumes:
       - ./:/home/nonroot/ghubscraper/
     # ports:
+    depends_on:
+      - mongo
     tty: true  # persist (should use 'sh' as entrypoint)
     # command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
-  db:
+  mongo:
     image: mongo
     container_name: mongo
     environment:
@@ -51,5 +53,15 @@ services:
     restart: always
     ports:
       - 5432:5432
+  scrapyd:
+    build: scrapyd/.
+    container_name: scrapyd
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+    ports:
+      - 6800:6800
+    command: scrapyd
+
 
 # scrapy crawl scraper -a start_urls=https://github.com/danilakritsky
