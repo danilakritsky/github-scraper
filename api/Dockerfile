@@ -10,14 +10,14 @@ RUN \
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN mkdir -p /home/api/
-ENV HOME=/home/api/
+RUN mkdir -p /home/
+ENV HOME=/home/api
 WORKDIR $HOME
 
-COPY requirements.txt $HOME
-RUN pip install -r requirements.txt
-COPY api ghubscraper manage.py $HOME
+COPY api $HOME/api/
+COPY manage.py requirements.txt $HOME/
+COPY ghubscraper $HOME/ghubscraper
 
 RUN \
-    python manage.py makemigrations && \
-    python manage.py migrate
+    python -m pip install -r requirements.txt && \
+    python manage.py makemigrations

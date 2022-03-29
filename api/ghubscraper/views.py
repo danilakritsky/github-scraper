@@ -12,6 +12,12 @@ from rest_framework.parsers import JSONParser
 class RepoCreate(generics.CreateAPIView):
     serializer_class = RepoSerializer
 
+    def get(self, request):
+        return Response(
+            {"info": "Make POST against this endpoint (/create/) to add new repo data."},
+            status=status.HTTP_200_OK
+        )
+
     def post(self, request):
         # use many=False since only single object is expected
         serializer = RepoSerializer(data=request.data, many=False)
