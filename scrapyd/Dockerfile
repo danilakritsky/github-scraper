@@ -10,10 +10,9 @@ RUN \
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN mkdir -p /home/scrapyd/
-ENV APP_DIR=/home/scrapyd/
+RUN mkdir -p /home/scrapydweb/
+ENV APP_DIR=/home/scrapydweb/
 WORKDIR $APP_DIR
 
-COPY requirements.txt $APP_DIR
+COPY requirements.txt scrapyd.conf $APP_DIR/
 RUN pip install -r requirements.txt
-COPY scrapyd.conf $APP_DIR

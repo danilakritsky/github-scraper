@@ -9,14 +9,15 @@ services:
     container_name: scraper
     environment:
       - MONGO_URI=mongodb://ghubscraper:ghubscraper@mongo:27017/
-    volumes:
-      - ./scraper/:/home/scraper/
+    # volumes:
+    #   - ./scraper/:/home/scraper/
     command: scrapyd-deploy
+
     depends_on:
       - mongo
-      - scrapyd
+#      - scrapyd
     tty: true  # persist (should use 'sh' as entrypoint)
-  
+
   # =======================
   
   mongo:
@@ -68,11 +69,24 @@ services:
   scrapyd:
     build: scrapyd/.
     container_name: scrapyd
-    environment:
-      - PYTHONDONTWRITEBYTECODE=1
-      - PYTHONUNBUFFERED=1
     ports:
       - 6800:6800
     command: scrapyd
+    depends_on:
+      - scraper
+
+  # =======================
+
+  scrapydweb:
+    build: scrapydweb/.
+    container_name: scrapydweb
+    ports:
+      - 5000:5000
+    # command: scrapydweb
+    tty: true
+    depends_on:
+      - scrapyd
+    volumes:
+      - ./scrapydweb/:/home/scrapydweb/
 
 # scrapy crawl scraper -a start_urls=https://github.com/danilakritsky
