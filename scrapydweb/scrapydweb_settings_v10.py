@@ -46,7 +46,6 @@ PASSWORD = ''
 #   - it's recommended to pass in a tuple of 5 elements.
 #   - e.g. ('', '', '127.0.0.1', '6800', '') or ('username', 'password', 'localhost', '6801', 'group')
 SCRAPYD_SERVERS = [
-    '127.0.0.1',
     'scrapyd:6800',
     # 'username:password@localhost:6801#group',
     # ('username', 'password', 'localhost', '6801', 'group'),
@@ -62,7 +61,7 @@ SCRAPYD_SERVERS = [
 # ScrapydWeb would try to directly read Scrapy logfiles from disk, instead of making a request
 # to the Scrapyd server.
 # e.g. '127.0.0.1:6800' or 'localhost:6801', do not forget the port number.
-LOCAL_SCRAPYD_SERVER = '127.0.0.1:6800'
+LOCAL_SCRAPYD_SERVER = ''
 
 # Enter the directory when you run Scrapyd, run the command below
 # to find out where the Scrapy logs are stored:

@@ -17,3 +17,4 @@ WORKDIR $APP_DIR
 COPY requirements.txt $APP_DIR
 COPY scrapydweb_settings_v10.py $APP_DIR
 RUN python -m pip install -r requirements.txt
+

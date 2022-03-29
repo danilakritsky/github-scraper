@@ -10,7 +10,6 @@ greenlet==1.1.2
 idna==3.3
 itsdangerous==2.1.2
 Jinja2==3.1.1
-logparser==0.8.2
 MarkupSafe==2.1.1
 pexpect==4.8.0
 ptyprocess==0.7.0
@@ -24,4 +23,8 @@ tzdata==2022.1
 tzlocal==4.1
 urllib3==1.26.9
 w3lib==1.22.0
-Werkzeug==2.1.0
+Werkzeug==2.0.3
+# !!! WARNING !!!
+# Using version 2.1.0 of Werkzeug results in the following error: 
+# Bad Request
+# The browser (or proxy) sent a request that this server could not understand.

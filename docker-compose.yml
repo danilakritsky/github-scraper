@@ -71,7 +71,8 @@ services:
     container_name: scrapyd
     ports:
       - 6800:6800
-    command: scrapyd
+    command: sh ./docker_entrypoint.sh
+    tty: true
     depends_on:
       - scraper
 
@@ -82,7 +83,7 @@ services:
     container_name: scrapydweb
     ports:
       - 5000:5000
-    # command: scrapydweb
+    command: scrapydweb
     tty: true
     depends_on:
       - scrapyd
