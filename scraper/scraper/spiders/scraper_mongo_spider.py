@@ -171,13 +171,14 @@ class ScraperMongoSpider(scrapy.Spider):
     def parse_latest_release_info(self, response):
         """Parse info about the latest release."""
         loader = response.meta["loader"]
-
-        loader.add_css("latest_release_tag", 'h1[class="d-inline mr-3"]::text')
+        loader.add_value(
+            "latest_release_tag", response.css('span[class="ml-1"]::text').get().strip()
+        )
 
         # support parsing changelogs written in both markdown and plain text
         loader.add_xpath(
             "latest_release_changelog",
-            '//div[@data-test-selector="body-content"]//text()',
+            '//div[@data-cstest-selector="body-content"]//text()',
         )
         loader.add_css("latest_release_changelog", "[data-test-selector]::text")
 

@@ -7,6 +7,7 @@ from ghubscraper.models import Repo
 
 class RepoSerializer(serializers.ModelSerializer):
     """Serializer for repo data."""
+
     class Meta:
         model = Repo
         fields = (
@@ -37,8 +38,10 @@ class CrawlSerializer(serializers.Serializer):
         )
     )
 
+
 class AccountSerializer(serializers.Serializer):
     """Serializer for account URL."""
+
     account = serializers.RegexField(
         r"^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$"
     )

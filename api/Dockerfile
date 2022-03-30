@@ -19,5 +19,4 @@ COPY manage.py requirements.txt $APP_DIR/
 COPY ghubscraper $APP_DIR/ghubscraper
 
 RUN \
-    python -m pip install -r requirements.txt && \
-    python manage.py makemigrations
+    python -m pip install -r requirements.txt
