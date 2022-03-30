@@ -9,10 +9,10 @@ from scrapy.loader import ItemLoader
 from scraper.items import RepoInfoItem
 
 
-class ScraperSpider(scrapy.Spider):
+class ScraperMongoSpider(scrapy.Spider):
     """Spider to crawl github accounts and collect data on repos."""
 
-    name = "scraper"
+    name = "scraper_mongo"
     allowed_domains = ["github.com"]
 
     custom_settings = {"ITEM_PIPELINES": {"scraper.pipelines.MongoDBPipeline": 100}}

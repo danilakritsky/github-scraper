@@ -16,6 +16,3 @@ WORKDIR $APP_DIR
 
 COPY scrapy.cfg requirements.txt $APP_DIR/
 RUN python -m pip install -r requirements.txt
-COPY scraper $APP_DIR/scraper
-RUN scrapyd-deploy $SCRAPYD_SERVER
-ENTRYPOINT [ "sh" ]

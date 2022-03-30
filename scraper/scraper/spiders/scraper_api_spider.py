@@ -7,10 +7,10 @@ import scrapy
 from scrapy.loader import ItemLoader
 
 from scraper.items import RepoInfoItem
-from .scraper_spider import ScraperSpider
+from .scraper_mongo_spider import ScraperMongoSpider
 
 
-class ScraperApiSpider(ScraperSpider):
+class ScraperApiSpider(ScraperMongoSpider):
     """Spider to crawl github accounts and collect data on repos."""
 
     name = "scraper_api"
