@@ -23,3 +23,11 @@ class RepoSerializer(serializers.ModelSerializer):
             'latest_release_datetime',
             'latest_release_changelog',         
         )
+
+class CrawlSerializer(serializers.Serializer):
+    # initialize fields
+    start_urls = serializers.ListField(
+        child = serializers.RegexField(f"^https?://github.com/[a-z-0-9]+")
+    )
+    
+    

@@ -93,5 +93,5 @@ ITEM_PIPELINES = {
 
 
 # MongoDB settings
-MONGO_URI = os.getenv('MONGO_URI')
+MONGO_URI = 'mongodb://ghubscraper:ghubscraper@mongo:27017/'
 MONGO_DATABASE_NAME = "ghubscraper"

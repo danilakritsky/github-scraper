@@ -3,7 +3,7 @@ from .models import Repo
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import RepoSerializer
+from .serializers import RepoSerializer, CrawlSerializer
 from rest_framework.renderers import JSONRenderer
 from rest_framework import status
 from rest_framework.parsers import JSONParser 
@@ -27,6 +27,26 @@ class RepoCreate(generics.CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class CrawlSpider(generics.CreateAPIView):
+    serializer_class = CrawlSerializer
+    def get(self, request):
+        return Response(
+            {"info": "Make a POST request against this endpoint (/crawl/) to start crawling."},
+            status=status.HTTP_200_OK
+        )
+
+    def post(self, request):
+        # use many=False since only single object is expected
+        serializer = CrawlSerializer(data=request.data, many=False)
+        if serializer.is_valid():
+            return Response(
+                {"info": "success"},
+                status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+    
 class RepoList(generics.ListAPIView):
     # API endpoint that allows customer to be viewed.
     queryset = Repo.objects.all()

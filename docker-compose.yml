@@ -6,16 +6,12 @@ services:
   
   scraper:
     build: scraper/.
-    container_name: scraper
-    environment:
-      - MONGO_URI=mongodb://ghubscraper:ghubscraper@mongo:27017/
-    # volumes:
-    #   - ./scraper/:/home/scraper/
+    container_name: scraper    
+    volumes:
+      - ./scraper/:/home/scraper/
     command: scrapyd-deploy
-
     depends_on:
-      - mongo
-#      - scrapyd
+      - scrapyd
     tty: true  # persist (should use 'sh' as entrypoint)
 
   # =======================
@@ -71,11 +67,13 @@ services:
     container_name: scrapyd
     ports:
       - 6800:6800
-    command: sh ./docker_entrypoint.sh
+    command: scrapyd
     tty: true
     depends_on:
-      - scraper
-
+      - mongo
+      - api
+    volumes:
+      - ./scrapyd/logs/:/home/scrapyd/logs/
   # =======================
 
   scrapydweb:
