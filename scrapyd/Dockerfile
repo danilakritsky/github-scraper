@@ -19,9 +19,5 @@ RUN pip install -r requirements.txt
 
 
 RUN mkdir logs
-RUN touch docker_entrypoint.sh
-RUN chmod +x docker_entrypoint.sh
-RUN echo "scrapyd &" >> docker_entrypoint.sh
-RUN echo "logparser -dir logs &" >> docker_entrypoint.sh
-ENTRYPOINT [ "sh" ]
+# ENTRYPOINT [ "sh" ]
 
