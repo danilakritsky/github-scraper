@@ -32,4 +32,4 @@ class Repo(models.Model):
     latest_release_changelog = models.TextField(blank=True)
 
     def __str__(self):
-        return self.name
+        return self.account

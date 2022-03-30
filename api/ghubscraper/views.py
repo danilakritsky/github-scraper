@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import RepoSerializer, CrawlSerializer
+from .serializers import RepoSerializer, CrawlSerializer, AccountSerializer
 from rest_framework.renderers import JSONRenderer
 from rest_framework import status
 from rest_framework.parsers import JSONParser
@@ -11,7 +11,7 @@ from .models import Repo
 import requests
 import datetime
 import os
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Max
 
 # use CreateAPIView for default form value
 class AddRepo(generics.CreateAPIView):
@@ -115,6 +115,8 @@ class ListAccounts(generics.ListAPIView):
             status=status.HTTP_200_OK
         )
 
+    def post(self, request):
+        serializer = AccountSerializer()
 
 class Index(generics.ListAPIView):
 
@@ -124,6 +126,7 @@ class Index(generics.ListAPIView):
 
 
 class Stats(generics.ListAPIView):
+    serializer_class = AccountSerializer
     def get(self, request):
         queryset = Repo.objects.values('account', 'repo')
         return Response({
@@ -133,7 +136,56 @@ class Stats(generics.ListAPIView):
         })
 
     def post(self, request):
+        serializer = AccountSerializer(data=request.data, many=False)
+        if not request.data["account"]:
+            return Response(
+                "No account URL has been provided.",
+                status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            cleaned_account = clean_url(request.data["account"])
+            queryset = Repo.objects.filter(account=cleaned_account)
+            if queryset:
+                max_commit_count = max( 
+                    item['main_branch_commit_count']
+                        for item
+                            in queryset.values('main_branch_commit_count')
+                )
+
+                top_branches_by_commit_count = (
+                    queryset
+                    .filter(main_branch_commit_count=max_commit_count)
+                    .values('repo')
+                )
+
+                # handles repos with the same commit count
+                top_branches_by_commit_count = [
+                    item['repo']
+                        for item in
+                            top_branches_by_commit_count
+                ]
+
+                avg_stars_count = (
+                    queryset
+                    .values('stars')
+                    .aggregate(avg_stars_count=Avg('stars'))['avg_stars_count']
+                )
+                return Response({
+                    "top_branches_by_commit_count": top_branches_by_commit_count,
+                    "commit_count": max_commit_count,
+                    "avg_stars_count": avg_stars_count
+                })
+            return Response(
+                f'This account has not been crawled yet.',
+                status=status.HTTP_200_OK
+            )
         
+        return  Response(
+            "Account URLs must be of the following format: "
+            "http(s)://github.com/<account>(/)",
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+        
+
         
 
 def clean_url(url: str) -> str:
