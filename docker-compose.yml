@@ -1,18 +1,28 @@
 version: '3.8'
 
 services:
-  ghubscraper:
-    build: .
-    container_name: ghubscraper
-    environment:
-      - MONGO_URI=mongodb://ghubscraper:ghubscraper@mongo:27017/
+
+  # =======================
+  
+  scraper:
+    build: scraper/.
+    container_name: scraper    
     volumes:
-      - ./:/home/nonroot/ghubscraper/
-    ports:
-      - 8000:8000
+      - ./scraper/:/home/scraper/
+    # run sh to persist after deployment
+    command: /bin/sh -c "scrapyd-deploy default && sh"
+    environment:
+      - SCRAPYD_SERVER=http://scrapyd:6800
+      - MONGO_URI=mongodb://ghubscraper:ghubscraper@mongo:27017/
+      - MONGO_DATABASE_NAME=ghubscraper
+      - API_SERVICE_URI=http://api:8000
+    depends_on:
+      - scrapyd
     tty: true  # persist (should use 'sh' as entrypoint)
-    # command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
-  db:
+
+  # =======================
+  
+  mongo:
     image: mongo
     container_name: mongo
     environment:
@@ -22,5 +32,73 @@ services:
       - 27017:27017
     volumes:
       - ./mongodata/:/data/db
+  
+  # =======================
+  
+  api:
+    build: api/.
+    container_name: api
+    ports:
+      - 8000:8000
+    volumes:
+       - ./api:/home/api
+    environment:
+      - HOSTS=postgres
+      - PORT=5432
+      - NAME=ghubscraper
+      - SCRAPYD_SERVER=http://scrapyd:6800/
+    # migrate here since migration depends on postgres
+    command: >
+      sh -c "python manage.py migrate &&
+            python manage.py runserver 0.0.0.0:8000"
+    tty: true
+    depends_on:
+      - postgres
+    links:
+      - postgres:postgres
+  
+  # =======================
+  
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=ghubscraper
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgresdata:/var/lib/postgresql/data
+  
+  # =======================
+  
+  scrapyd:
+    build: scrapyd/.
+    container_name: scrapyd
+    ports:
+      - 6800:6800
+    command: scrapyd
+    tty: true
+    depends_on:
+      - mongo
+      - api
+    volumes:
+      - ./scrapyd/logs/:/home/scrapyd/logs/
+  # =======================
+
+  scrapydweb:
+    build: scrapydweb/.
+    container_name: scrapydweb
+    environment:
+      - SCRAPYD_SERVER=scrapyd:6800
+    ports:
+      - 5000:5000
+    command: scrapydweb
+    tty: true
+    depends_on:
+      - scrapyd
+    volumes:
+      - ./scrapydweb/:/home/scrapydweb/
 
 # scrapy crawl scraper -a start_urls=https://github.com/danilakritsky

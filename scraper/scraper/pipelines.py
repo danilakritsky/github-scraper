@@ -1,12 +1,16 @@
 """This module container pipelines for processing parsed items."""
 
 import logging
-import pymongo
 
+import pymongo
+import scrapy
 from scrapy.utils.project import get_project_settings
+import json
 
 from .items import RepoInfoItem
-
+from itemadapter import ItemAdapter
+from scrapy.http import FormRequest
+import requests
 
 settings = get_project_settings()
 
@@ -48,3 +52,16 @@ class MongoDBPipeline:
             collection.insert_one(dict(item))
             logging.info(f"Info on '{account}/{repo}' added to MongoDB.")
             return item
+
+
+class APIPipeline:
+    """Pipeline that save scraped repo data to a MongoDB database."""
+
+    def process_item(self, item, _):
+        """Process each item and save it to the database."""
+        requests.post(
+            settings.get("API_SERVICE_URI") + "/create/",
+            data=json.dumps(ItemAdapter(item).asdict()),
+            headers={"Content-type": "application/json", "Accept": "application/json"},
+        )
+        return item

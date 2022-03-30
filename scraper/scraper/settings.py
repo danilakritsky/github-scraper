@@ -8,6 +8,7 @@
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 import os
+
 BOT_NAME = "scraper"
 
 SPIDER_MODULES = ["scraper.spiders"]
@@ -64,7 +65,10 @@ SPIDER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {"scraper.pipelines.MongoDBPipeline": 100}
+ITEM_PIPELINES = {
+    "scraper.pipelines.MongoDBPipeline": 100,
+    "scraper.pipelines.APIPipeline": 200,
+}
 
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -90,5 +94,6 @@ ITEM_PIPELINES = {"scraper.pipelines.MongoDBPipeline": 100}
 
 
 # MongoDB settings
-MONGO_URI = os.getenv('MONGO_URI')
-MONGO_DATABASE_NAME = "ghubscraper"
+MONGO_URI = os.getenv("MONGO_URI") or "mongodb://ghubscraper:ghubscraper@mongo:27017/"
+MONGO_DATABASE_NAME = os.getenv("MONGO_DATABASE_NAME") or "ghubscraper"
+API_SERVICE_URI = os.getenv("API_SERVICE_URI") or "http://api:8000"
