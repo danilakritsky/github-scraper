@@ -1,8 +1,10 @@
 from django.urls import include, path
-from .views import RepoCreate, RepoList, CrawlSpider
+from django.shortcuts import redirect
+from .views import AddRepo, ListAccounts, CrawlPages, Index
 
 urlpatterns = [
-    path("create/", RepoCreate.as_view(), name="create-repo"),
-    path("", RepoList.as_view()),
-    path("crawl/", CrawlSpider.as_view()),
+    path("", Index.as_view(), name='index'),
+    path("add/", AddRepo.as_view(), name="add_repo"),
+    path("accounts/", ListAccounts.as_view(), name="list_accounts"),
+    path("crawl/", CrawlPages.as_view(), name="crawl_pages"),
 ]

@@ -7,13 +7,14 @@ from .serializers import RepoSerializer, CrawlSerializer
 from rest_framework.renderers import JSONRenderer
 from rest_framework import status
 from rest_framework.parsers import JSONParser
+from django.shortcuts import redirect
 from .models import Repo
 import requests
 import datetime
 import os
 
 # use CreateAPIView for default form value
-class RepoCreate(generics.CreateAPIView):
+class AddRepo(generics.CreateAPIView):
     serializer_class = RepoSerializer
 
     def get(self, request):
@@ -39,7 +40,7 @@ class RepoCreate(generics.CreateAPIView):
 
             # save new item
             instance = Repo(**data)
-            instance.account = clean_url(data["account"])
+            instance.account = data["account"]
             instance.save()
 
             return Response(data=data, status=status.HTTP_201_CREATED)
@@ -47,7 +48,7 @@ class RepoCreate(generics.CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CrawlSpider(generics.CreateAPIView):
+class CrawlPages(generics.CreateAPIView):
     serializer_class = CrawlSerializer
 
     def get(self, request):
@@ -67,10 +68,18 @@ class CrawlSpider(generics.CreateAPIView):
         if serializer.is_valid():
             validated_urls = []
             for url in request.data["start_urls"]:
-                validated_urls.append(clean_url(url))
+                validated_urls.append(cleaned_url:=clean_url(url))
+
+                # drop existing items
+                queryset = Repo.objects.filter(account=cleaned_url)
+                if queryset:
+                    for record in queryset:
+                        record.delete()
 
             # remove duplicates
             request.data["start_urls"] = list(set(validated_urls))
+
+            
 
             response = requests.post(
                 (os.getenv("SCRAPYD_HOST") or "http://scrapyd:6800") + "/schedule.json",
@@ -95,12 +104,32 @@ class CrawlSpider(generics.CreateAPIView):
         )
 
 
-class RepoList(generics.ListAPIView):
+class ListAccounts(generics.ListAPIView):
     # API endpoint that allows customer to be viewed.
-    queryset = Repo.objects.all()
+    
     serializer_class = RepoSerializer
+    def get(self, request):
+        queryset = set(item['account'] for item in Repo.objects.values('account'))
+        return Response(
+            {'accounts': sorted([url for url in queryset])},
+            status=status.HTTP_200_OK
+        )
 
 
+class Index(generics.ListAPIView):
+
+    def get(self, request):
+        # account_count = len(set(item['account'] for item in Repo.objects.values('account')))
+        return redirect('list_accounts')
+
+
+class Stats(generics.ListAPIView):
+    def get(self, request):
+        queryset = Repo.objects.values('account')
+        repo_count = len()
+        account_count = len(
+            set(item['account'] for item in Repo.objects.values('account'))
+        )
 def clean_url(url: str) -> str:
     url = url.replace("http:", "https:")
     return url[:-1] if url[-1] == "/" else url
