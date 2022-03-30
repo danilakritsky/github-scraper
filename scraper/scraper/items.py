@@ -1,12 +1,10 @@
-# Define here the models for your scraped items
-#
-# See documentation in:
-# https://docs.scrapy.org/en/latest/topics/items.html
+"""This modules define the models for scraped items."""
 
 from datetime import datetime
+
 import scrapy
+from itemloaders.processors import Identity, Join, TakeFirst
 from scrapy import Field
-from itemloaders.processors import Identity, TakeFirst, Join
 
 
 def parse_utc_string(datestr: str) -> datetime:

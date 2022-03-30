@@ -1,7 +1,7 @@
 """This module contains the spider for crawling and parsing repo data."""
 
-import re
 import copy
+import re
 
 import scrapy
 from scrapy.loader import ItemLoader
@@ -18,12 +18,12 @@ class ScraperMongoSpider(scrapy.Spider):
     custom_settings = {"ITEM_PIPELINES": {"scraper.pipelines.MongoDBPipeline": 100}}
 
     def start_requests(self):
-        """Start requests on the given url."""
+        """Start making requests to the given URLs."""
         start_urls = []
         for url in self.start_urls.split(","):
             # ignore any domain other than github.com
             if re.search(
-                "^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$", url
+                r"^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$", url
             ):
                 url = url.replace("http:", "https:")
                 if url[-1] == "/":
@@ -39,11 +39,11 @@ class ScraperMongoSpider(scrapy.Spider):
                 yield scrapy.Request(
                     url, callback=self.parse_account_page, meta={"loader": loader}
                 )
-        else:
-            return
+        # else:
+        #     return
 
     def parse_account_page(self, response) -> None:
-        """Parse the GitHUb account page to extract the link to repos."""
+        """Parse a GitHUb account page to extract a link to account's repos."""
         loader = response.meta["loader"]
         repos_url = response.css("[href]::attr(href)").re(".*repositories.*")[0]
         yield response.follow(

@@ -2,10 +2,6 @@ FROM python:3.10-alpine
 
 RUN \
     apk update
-    # && apk add --no-cache \
-    #     gcc \
-    #     musl-dev \
-    #     libffi-dev
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
