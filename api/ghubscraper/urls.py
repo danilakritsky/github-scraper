@@ -1,6 +1,8 @@
-from django.urls import include, path
-from django.shortcuts import redirect
-from .views import AddRepo, ListAccounts, CrawlPages, Index, Stats
+"""This module contains endpoints and their views."""
+
+from django.urls import path
+
+from .views import AddRepo, CrawlPages, Index, ListAccounts, Stats
 
 urlpatterns = [
     path("", Index.as_view(), name='index'),

@@ -1,23 +1,25 @@
-from django.shortcuts import render
-from rest_framework import generics
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from .serializers import RepoSerializer, CrawlSerializer, AccountSerializer
-from rest_framework.renderers import JSONRenderer
-from rest_framework import status
-from rest_framework.parsers import JSONParser
-from django.shortcuts import redirect
-from .models import Repo
-import requests
+"""This module contains the app's views."""
+
 import datetime
 import os
-from django.db.models import Avg, Count, Max
+
+import requests
+from django.db.models import Avg
+from django.shortcuts import redirect
+from rest_framework import generics, status
+from rest_framework.response import Response
+
+from .models import Repo
+from .serializers import AccountSerializer, CrawlSerializer, RepoSerializer
+
 
 # use CreateAPIView for default form value
 class AddRepo(generics.CreateAPIView):
+    """View that adds repo data to the database."""
     serializer_class = RepoSerializer
 
     def get(self, request):
+        """Return usage info message."""
         return Response(
             {
                 "info": "Make a POST request against this endpoint (/create/) to add new repo data."
@@ -26,6 +28,7 @@ class AddRepo(generics.CreateAPIView):
         )
 
     def post(self, request):
+        """Save request data to the database."""        
         # use many=False since only single object is expected
         serializer = RepoSerializer(data=request.data, many=False)
         data = request.data
@@ -49,6 +52,7 @@ class AddRepo(generics.CreateAPIView):
 
 
 class CrawlPages(generics.CreateAPIView):
+    """View that starts scraping by calling """
     serializer_class = CrawlSerializer
 
     def get(self, request):
@@ -79,8 +83,6 @@ class CrawlPages(generics.CreateAPIView):
             # remove duplicates
             request.data["start_urls"] = list(set(validated_urls))
 
-            
-
             response = requests.post(
                 (os.getenv("SCRAPYD_HOST") or "http://scrapyd:6800") + "/schedule.json",
                 data={
@@ -106,7 +108,7 @@ class CrawlPages(generics.CreateAPIView):
 
 class ListAccounts(generics.ListAPIView):
     # API endpoint that allows customer to be viewed.
-    
+
     serializer_class = RepoSerializer
     def get(self, request):
         queryset = set(item['account'] for item in Repo.objects.values('account'))
@@ -117,6 +119,7 @@ class ListAccounts(generics.ListAPIView):
 
     def post(self, request):
         serializer = AccountSerializer()
+
 
 class Index(generics.ListAPIView):
 

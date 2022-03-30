@@ -1,12 +1,16 @@
-from django.db import models
-import re
+"""This module contains database models."""
+
 from django.core.validators import RegexValidator
+from django.db import models
+
 
 class Repo(models.Model):
+    """Model representing a GitHub repo data."""
+
     account = models.URLField(
         validators=[
             RegexValidator(
-                "^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$",
+                r"^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$",
                 message="All URLs must be of the following format: "
                 "http(s)://github.com/<account>(/)",
             )
