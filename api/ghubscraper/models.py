@@ -1,15 +1,16 @@
-from django.db import models
-import re
-from django.core.validators import RegexValidator
+"""This module contains database models."""
 
-# Create your models here.
+from django.core.validators import RegexValidator
+from django.db import models
 
 
 class Repo(models.Model):
+    """Model representing a GitHub repo data."""
+
     account = models.URLField(
         validators=[
             RegexValidator(
-                "^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$",
+                r"^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$",
                 message="All URLs must be of the following format: "
                 "http(s)://github.com/<account>(/)",
             )
@@ -35,4 +36,4 @@ class Repo(models.Model):
     latest_release_changelog = models.TextField(blank=True)
 
     def __str__(self):
-        return self.name
+        return self.account

@@ -1,3 +1,5 @@
+"""Module to store app configs."""
+
 from django.apps import AppConfig
 
 

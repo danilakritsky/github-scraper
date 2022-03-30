@@ -17,7 +17,4 @@ WORKDIR $APP_DIR
 COPY requirements.txt scrapyd.conf $APP_DIR/
 RUN pip install -r requirements.txt
 
-
 RUN mkdir logs
-# ENTRYPOINT [ "sh" ]
-

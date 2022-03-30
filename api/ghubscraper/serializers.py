@@ -1,12 +1,12 @@
-import re
-
-from django.core.exceptions import ValidationError
+"""This module contains serializers for data."""
 
 from rest_framework import serializers
+
 from ghubscraper.models import Repo
 
 
 class RepoSerializer(serializers.ModelSerializer):
+    """Serializer for repo data."""
     class Meta:
         model = Repo
         fields = (
@@ -29,9 +29,16 @@ class RepoSerializer(serializers.ModelSerializer):
 
 
 class CrawlSerializer(serializers.Serializer):
+    "Serializer for a list of URLs to scrape."
 
     start_urls = serializers.ListField(
         child=serializers.RegexField(
-            "^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$"
+            r"^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$"
         )
+    )
+
+class AccountSerializer(serializers.Serializer):
+    """Serializer for account URL."""
+    account = serializers.RegexField(
+        r"^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$"
     )
