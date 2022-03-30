@@ -2,9 +2,6 @@ from django.db import models
 import re
 from django.core.validators import RegexValidator
 
-# Create your models here.
-
-
 class Repo(models.Model):
     account = models.URLField(
         validators=[

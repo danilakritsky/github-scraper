@@ -35,3 +35,6 @@ class CrawlSerializer(serializers.Serializer):
             "^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$"
         )
     )
+
+class AccountSerializer(serializers.Serializer):
+    account = serializers.RegexField("^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$")

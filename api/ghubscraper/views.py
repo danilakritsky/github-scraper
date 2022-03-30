@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from .models import Repo
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,6 +11,7 @@ from .models import Repo
 import requests
 import datetime
 import os
+from django.db.models import Avg, Count
 
 # use CreateAPIView for default form value
 class AddRepo(generics.CreateAPIView):
@@ -125,11 +125,17 @@ class Index(generics.ListAPIView):
 
 class Stats(generics.ListAPIView):
     def get(self, request):
-        queryset = Repo.objects.values('account')
-        repo_count = len()
-        account_count = len(
-            set(item['account'] for item in Repo.objects.values('account'))
-        )
+        queryset = Repo.objects.values('account', 'repo')
+        return Response({
+                'account_count': (account_count := queryset.values('account').distinct().count()),
+                'repo_count': (repo_count := queryset.count()),
+                'avg_repo_count': repo_count / account_count
+        })
+
+    def post(self, request):
+        
+        
+
 def clean_url(url: str) -> str:
     url = url.replace("http:", "https:")
     return url[:-1] if url[-1] == "/" else url
