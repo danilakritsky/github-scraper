@@ -16,13 +16,14 @@ from .serializers import AccountSerializer, CrawlSerializer, RepoSerializer
 # use CreateAPIView for default form value
 class AddRepo(generics.CreateAPIView):
     """View that adds repo data to the database."""
+
     serializer_class = RepoSerializer
 
     def get(self, request):
         """Return usage info message."""
         return Response(
             {
-                "info": "Make a POST request against this endpoint (/create/) to add new repo data."
+                "info": "Make a POST request against this endpoint (/add/) to add new repo data."
             },
             status=status.HTTP_200_OK,
         )
@@ -53,6 +54,7 @@ class AddRepo(generics.CreateAPIView):
 
 class CrawlPages(generics.CreateAPIView):
     """View that starts scraping by calling spiders deployed on a remote server."""
+
     serializer_class = CrawlSerializer
 
     def get(self, request):
@@ -74,7 +76,7 @@ class CrawlPages(generics.CreateAPIView):
         if serializer.is_valid():
             validated_urls = []
             for url in request.data["start_urls"]:
-                validated_urls.append(cleaned_url:=clean_url(url))
+                validated_urls.append(cleaned_url := clean_url(url))
 
                 # drop existing items
                 queryset = Repo.objects.filter(account=cleaned_url)
@@ -115,11 +117,8 @@ class ListAccounts(generics.ListAPIView):
 
     def get(self, request):
         """Get a list of scraped accounts."""
-        queryset = set(item['account'] for item in Repo.objects.values('account'))
-        return Response(
-            {'accounts': sorted(list(queryset))},
-            status=status.HTTP_200_OK
-        )
+        queryset = set(item["account"] for item in Repo.objects.values("account"))
+        return Response({"accounts": sorted(list(queryset))}, status=status.HTTP_200_OK)
 
 
 class Index(generics.ListAPIView):
@@ -127,68 +126,69 @@ class Index(generics.ListAPIView):
 
     def get(self, request):
         """Redirect to the list_accounts view."""
-        return redirect('list_accounts')
+        return redirect("list_accounts")
 
 
 class Stats(generics.ListAPIView):
     """View that provides aggregated stats on stored GitHub data."""
+
     serializer_class = AccountSerializer
 
     def get(self, request):
         """Get info about all stored GitHub accounts."""
-        queryset = Repo.objects.values('account', 'repo')
-        return Response({
-                'account_count': (account_count := queryset.values('account').distinct().count()),
-                'repo_count': (repo_count := queryset.count()),
-                'avg_repo_count': repo_count / account_count
-        })
+        queryset = Repo.objects.values("account", "repo")
+        return Response(
+            {
+                "account_count": (
+                    account_count := queryset.values("account").distinct().count()
+                ),
+                "repo_count": (repo_count := queryset.count()),
+                "avg_repo_count": repo_count / account_count if account_count else 0,
+            }
+        )
 
     def post(self, request):
         """Request info on a specific GitHub account."""
         serializer = AccountSerializer(data=request.data, many=False)
         if not request.data["account"]:
             return Response(
-                "No account URL has been provided.",
-                status.HTTP_400_BAD_REQUEST)
+                "No account URL has been provided.", status.HTTP_400_BAD_REQUEST
+            )
         if serializer.is_valid():
             cleaned_account = clean_url(request.data["account"])
             queryset = Repo.objects.filter(account=cleaned_account)
             if queryset:
                 max_commit_count = max(
-                    item['main_branch_commit_count']
-                        for item
-                            in queryset.values('main_branch_commit_count')
+                    item["main_branch_commit_count"]
+                    if item["main_branch_commit_count"] is not None
+                    else 0
+                    for item in queryset.values("main_branch_commit_count")
                 )
 
-                top_branches_by_commit_count = (
-                    queryset
-                    .filter(main_branch_commit_count=max_commit_count)
-                    .values('repo')
-                )
+                top_repos_by_commit_count = queryset.filter(
+                    main_branch_commit_count=max_commit_count
+                ).values("repo")
 
                 # handles repos with the same commit count
-                top_branches_by_commit_count = [
-                    item['repo']
-                        for item in
-                            top_branches_by_commit_count
+                top_repos_by_commit_count = [
+                    item["repo"] for item in top_repos_by_commit_count
                 ]
 
-                avg_stars_count = (
-                    queryset
-                    .values('stars')
-                    .aggregate(avg_stars_count=Avg('stars'))['avg_stars_count']
+                avg_stars_count = queryset.values("stars").aggregate(
+                    avg_stars_count=Avg("stars")
+                )["avg_stars_count"]
+                return Response(
+                    {
+                        "top_repos_by_commit_count": top_repos_by_commit_count,
+                        "commit_count": max_commit_count,
+                        "avg_stars_count": avg_stars_count,
+                    }
                 )
-                return Response({
-                    "top_branches_by_commit_count": top_branches_by_commit_count,
-                    "commit_count": max_commit_count,
-                    "avg_stars_count": avg_stars_count
-                })
             return Response(
-                'This account has not been crawled yet.',
-                status=status.HTTP_200_OK
+                "This account has not been crawled yet.", status=status.HTTP_200_OK
             )
 
-        return  Response(
+        return Response(
             "Account URLs must be of the following format: "
             "http(s)://github.com/<account>(/)",
             status=status.HTTP_400_BAD_REQUEST,

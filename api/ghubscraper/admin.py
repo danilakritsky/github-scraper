@@ -1,4 +1,4 @@
-"Module to register models."""
+"Module to register models." ""
 
 from django.contrib import admin
 

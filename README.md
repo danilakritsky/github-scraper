@@ -4,7 +4,7 @@ ghubscraper
 A small dockerized service that scrapes GitHub account pages, collecting info on accounts' repos and their stats.
 
 
-### Architecture
+## Architecture
 **ghubscraper** consists of 6 dockerized services that are run together with `docker-compose`.
 1. ***scraper*** - contains `scrapy` project and spiders that crawl and parse GitHub account pages for data. Two spiders are defined:
     - *scraper_mongo_spider* - scrapes data and saves them to a MongoDB instance running on ***mongo*** container
@@ -18,27 +18,64 @@ A small dockerized service that scrapes GitHub account pages, collecting info on
 
 4. ***scrapydweb*** - app that provides web UI to the ***scrapyd*** service for easier spider scheduling and logging.
 
-`scraper` - a `scrapy` project.  
-- `./scraper/spiders/scraper_spider.py` - defines a `scraper` spider that does the crawling. 
-- `./scraper/items.py` - defines several `Item` objects that are used to process crawled data.
-- `./scraper/pipelines.py` - defines a pipeline that stores processed items in a MongoDB database instance.
-- `./scraper/settings.py` - stores project settings.
+5. ***mongo*** - an instance of MondoDB used to store items scraped by *scraper_mongo_spider*
 
-### Deployment
-Clone the projects' repo and `cd` into it:
+6. ***postgres*** - an instance of PostgreSQL database used to store items scraped by *scraper_api_spider* through the ***api*** service
+
+Items saved ***mongo*** and ***postgres*** to these databases persist across container sessions by using mapped volumes inside the project's directory.
+
+
+
+## Deployment
+**`docker` and `docker-compose` must be available on your system.**  
+Clone the project and `cd` into it:
 > `git clone https://github.com/danilakritsky/ghubscraper`
 >
 > `cd ghubscraper`
 >
-**`docker` must be installed on your system.**  
-App is deployed via `docker` CLI using the `Dockerfile` and `docker-compose.yml` files provided in the project's directory.  
-These files define two containers - one for the `ghubscraper` project itself and another one for the MongoDB database that will be used to store the scraped data.  
-To build and start both containers in detached mode run the following command:
-> ```docker-compose up -d```
+Start containers in detached mode:
+> `docker-compose up -d`
 
-### Example usage
+## Example usage
 
-After both containers are started up you can begin scraping.
+### Using the **api** service for scraping and stats
+Browsable API is exposed on **localhost:8000** and exposes the provides the following actionable endpoints:
+- *localhost:8000/accounts/* - list all accounts that have been scraped and saved to the Postgres database.  
+Example response:  
+>`{
+    "accounts": [
+        "https://github.com/danilakritsky",
+        "https://github.com/scrapy",
+        "https://github.com/shurke",
+        "https://github.com/ubuntu"
+    ]
+}`
+>
+
+- *localhost:8000/add/* - send POST request to save data about some repo to the database.  
+Example request:
+> `{
+    "account": "https://github.com/ubuntu",
+    "repo": "ubuntu-make",
+    "about": "Easy setup of common tools for developers on Ubuntu.",
+    "website_link": "",
+    "stars": 1091,
+    "forks": 176,
+    "watching": "75",
+    "main_branch_commit_count": 1799,
+    "main_branch_latest_commit_author": "LyzardKing",
+    "main_branch_latest_commit_datetime": "2022-01-29T13:35:02Z",
+    "main_branch_latest_commit_message": "Fix AdoptOpenJDK to adoptium",
+    "release_count": 4,
+    "latest_release_tag": "",
+    "latest_release_datetime": "2022-01-29T13:35:02Z",
+    "latest_release_changelog": ""
+}
+`
+>
+- *localhost:8000/crawl/
+
+
 First, login in into the `ghubscraper` container by running:
 > `docker exec -it ghubscraper sh`  
 >

@@ -7,13 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ghubscraper', '0001_initial'),
+        ("ghubscraper", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='repo',
-            name='account',
-            field=models.URLField(validators=[django.core.validators.RegexValidator('^https?://github.com/[a-z0-9](?:[a-z\\d]|-(?=[a-z\\d])){0,38}/?$', message='All URLs must be of the following format: http(s)://github.com/<account>(/)')]),
+            model_name="repo",
+            name="account",
+            field=models.URLField(
+                validators=[
+                    django.core.validators.RegexValidator(
+                        "^https?://github.com/[a-z0-9](?:[a-z\\d]|-(?=[a-z\\d])){0,38}/?$",
+                        message="All URLs must be of the following format: http(s)://github.com/<account>(/)",
+                    )
+                ]
+            ),
         ),
     ]

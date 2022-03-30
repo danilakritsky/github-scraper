@@ -5,8 +5,8 @@ from .scraper_mongo_spider import ScraperMongoSpider
 
 class ScraperApiSpider(ScraperMongoSpider):
     """Spider to crawl github accounts and collect data on repos.
-        Data is saved making requests to an API service, that saved parsed data
-        to a postgres database.
+    Data is saved making requests to an API service, that saved parsed data
+    to a postgres database.
     """
 
     name = "scraper_api"
