@@ -23,12 +23,11 @@ def remove_thousand_separator(int_as_str: str) -> str:
     """Removes thousand separator from a number stored as string."""
     return int_as_str.replace(",", "")
 
+
 class RepoInfoItem(scrapy.Item):
     """Item encapsulating repository data."""
 
-    account = Field(
-        input_processor=Identity(), output_processor=TakeFirst()
-    )
+    account = Field(input_processor=Identity(), output_processor=TakeFirst())
     repo = Field(
         input_processor=lambda x: x[0].split("/")[-1], output_processor=TakeFirst()
     )

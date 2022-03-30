@@ -15,16 +15,19 @@ class ScraperSpider(scrapy.Spider):
     name = "scraper"
     allowed_domains = ["github.com"]
 
-    custom_settings = {
-        'ITEM_PIPELINES': {"scraper.pipelines.MongoDBPipeline": 100}
-    }
+    custom_settings = {"ITEM_PIPELINES": {"scraper.pipelines.MongoDBPipeline": 100}}
 
     def start_requests(self):
         """Start requests on the given url."""
         start_urls = []
         for url in self.start_urls.split(","):
             # ignore any domain other than github.com
-            if re.findall(f"^https?://{self.allowed_domains[0]}/[a-z-0-9]+", url):
+            if re.search(
+                "^https?://github.com/[a-z0-9](?:[a-z\d]|-(?=[a-z\d])){0,38}/?$", url
+            ):
+                url = url.replace("http:", "https:")
+                if url[-1] == "/":
+                    url = url[:-1]
                 start_urls.append(url)
             else:
                 self.logger.warning(f"Ignoring {url} - not a valid GitHub subdomain!")
@@ -93,7 +96,7 @@ class ScraperSpider(scrapy.Spider):
         releases_url = response.css('a[href$="/releases"]::attr(href)').get()
 
         # NOTE only the main branch commits are available to parse from the repo page
-       #  main_branch_loader = ItemLoader(item=MainBranchItem(), selector=response)
+        #  main_branch_loader = ItemLoader(item=MainBranchItem(), selector=response)
         main_branch_commits_url = response.css('a[href*="commits"]::attr(href)').get()
         if main_branch_commits_url:  # handle empty repos
             # use the desendant selector (' '), instead of the child selector ('>')
@@ -168,22 +171,16 @@ class ScraperSpider(scrapy.Spider):
     def parse_latest_release_info(self, response):
         """Parse info about the latest release."""
         loader = response.meta["loader"]
-        
-        loader.add_css(
-            "latest_release_tag", 'h1[class="d-inline mr-3"]::text'
-        )
+
+        loader.add_css("latest_release_tag", 'h1[class="d-inline mr-3"]::text')
 
         # support parsing changelogs written in both markdown and plain text
         loader.add_xpath(
             "latest_release_changelog",
             '//div[@data-test-selector="body-content"]//text()',
         )
-        loader.add_css(
-            "latest_release_changelog", "[data-test-selector]::text"
-        )
+        loader.add_css("latest_release_changelog", "[data-test-selector]::text")
 
-        loader.add_css(
-            "latest_release_datetime", "[datetime]::attr(datetime)"
-        )
+        loader.add_css("latest_release_datetime", "[datetime]::attr(datetime)")
 
         yield loader.load_item()

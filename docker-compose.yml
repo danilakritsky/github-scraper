@@ -10,6 +10,11 @@ services:
     volumes:
       - ./scraper/:/home/scraper/
     command: scrapyd-deploy
+    environment:
+      - SCRAPYD_SERVER=http://scrapyd:6800
+      - MONGO_URI=mongodb://ghubscraper:ghubscraper@mongo:27017/
+      - MONGO_DATABASE_NAME=ghubscraper
+      - API_SERVICE_URI=http://api:8000
     depends_on:
       - scrapyd
     tty: true  # persist (should use 'sh' as entrypoint)
@@ -36,6 +41,11 @@ services:
       - 8000:8000
     volumes:
        - ./api:/home/api
+    environment:
+      - HOSTS=postgres
+      - PORT=5432
+      - NAME=ghubscraper
+      - SCRAPYD_SERVER=http://scrapyd:6800/
     # migrate here since migration depends on postgres
     command: >
       sh -c "python manage.py migrate &&
@@ -79,6 +89,8 @@ services:
   scrapydweb:
     build: scrapydweb/.
     container_name: scrapydweb
+    environment:
+      - SCRAPYD_SERVER=scrapyd:6800
     ports:
       - 5000:5000
     command: scrapydweb

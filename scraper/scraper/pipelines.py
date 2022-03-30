@@ -60,12 +60,8 @@ class APIPipeline:
     def process_item(self, item, _):
         """Process each item and save it to the database."""
         requests.post(
-            'http://api:8000/create/',
+            settings.get("API_SERVICE_URI") + "/create/",
             data=json.dumps(ItemAdapter(item).asdict()),
-            headers={
-                'Content-type':'application/json', 
-                'Accept':'application/json'
-            }
+            headers={"Content-type": "application/json", "Accept": "application/json"},
         )
         return item
-
