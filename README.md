@@ -1,7 +1,7 @@
 github-scraper
 ============
 
-A small dockerized service that scrapes GitHub account pages, collecting info about accounts' repos and providing summary statistics.
+A dockerized microservice that provides an API for scraping GitHub account pages, and storing, accessing and calculating summary statistics of the scraped data.
 
 
 ## Architecture
@@ -46,7 +46,6 @@ Example response:
     "accounts": [
         "https://github.com/danilakritsky",
         "https://github.com/scrapy",
-        "https://github.com/shurke",
         "https://github.com/ubuntu"
     ]
 }`
